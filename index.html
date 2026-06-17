@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,8 +16,8 @@
   --stone: #f5f0e8;
   --ink: #1c1c1a;
   --muted: #6b6b60;
-  --dot-done: #6ab547;
-  --dot-todo: #8a9e7a;
+  --dot-done: #7ed321;
+  --dot-todo: #3a3a2e;
   --card-bg: rgba(20,38,20,0.98);
   --card-border: #3a5c2a;
 }
@@ -50,19 +51,23 @@ nav a:hover { opacity:1; }
 #map-container svg { display:block; width:100%; height:auto; }
 
 /* D3 map styles */
-.state-fill { fill:#243d22; stroke:#1a2e1a; stroke-width:0.8; }
-.state-border { fill:none; stroke:rgba(163,196,122,0.25); stroke-width:0.5; }
-.nation-border { fill:none; stroke:rgba(163,196,122,0.5); stroke-width:1; }
+.state-fill { stroke:#131f11; stroke-width:0.8; }
+.state-todo { fill:#1e3019; }
+.state-done { fill:#2d5c1a; }
+.state-border { fill:none; stroke:rgba(163,196,122,0.3); stroke-width:0.5; }
+.nation-border { fill:none; stroke:rgba(163,196,122,0.6); stroke-width:1.2; }
 
 .hp-dot { cursor:pointer; }
 .hp-dot .ring { fill:none; stroke-width:1.5; opacity:0; transition:opacity 0.2s; }
 .hp-dot:hover .ring { opacity:1; }
 .hp-dot .core { transition:r 0.15s; }
-.hp-dot.done .core { fill:#6ab547; }
-.hp-dot.done .ring { stroke:#6ab547; }
-.hp-dot.todo .core { fill:#6a8a60; }
-.hp-dot.todo .ring { stroke:#6a8a60; }
-.hp-dot:hover .core { r:7; }
+.hp-dot.done .core { fill:#7ed321; }
+.hp-dot.done .ring { stroke:#7ed321; }
+.hp-dot.todo .core { fill:#3a3d30; }
+.hp-dot.todo .ring { stroke:#5a6050; }
+.hp-dot.done .core { r:6; }
+.hp-dot.todo .core { r:4; }
+.hp-dot:hover .core { r:8; }
 
 #tooltip {
   position:fixed; pointer-events:none; z-index:200; opacity:0; transition:opacity 0.15s; max-width:290px;
@@ -93,8 +98,8 @@ nav a:hover { opacity:1; }
 .legend { display:flex; gap:1.5rem; padding:0.75rem 2rem 1rem; align-items:center; }
 .legend-item { display:flex; align-items:center; gap:7px; font-size:12px; color:rgba(245,240,232,0.5); }
 .legend-dot { width:10px; height:10px; border-radius:50%; }
-.legend-dot.done { background:#6ab547; }
-.legend-dot.todo { background:#6a8a60; }
+.legend-dot.done { background:#7ed321; }
+.legend-dot.todo { background:#3a3d30; border:1px solid #5a6050; }
 
 .log-section { padding:0 2rem 2.5rem; max-width:700px; }
 .section-eyebrow { font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(163,196,122,0.6); margin-bottom:1rem; }
@@ -428,6 +433,18 @@ function diffColor(d) {
 }
 
 // ── D3 MAP ──
+// FIPS numeric ID → state abbreviation (us-atlas uses FIPS codes as feature IDs)
+const FIPS = {
+  "01":"AL","02":"AK","04":"AZ","05":"AR","06":"CA","08":"CO","09":"CT",
+  "10":"DE","12":"FL","13":"GA","15":"HI","16":"ID","17":"IL","18":"IN",
+  "19":"IA","20":"KS","21":"KY","22":"LA","23":"ME","24":"MD","25":"MA",
+  "26":"MI","27":"MN","28":"MS","29":"MO","30":"MT","31":"NE","32":"NV",
+  "33":"NH","34":"NJ","35":"NM","36":"NY","37":"NC","38":"ND","39":"OH",
+  "40":"OK","41":"OR","42":"PA","44":"RI","45":"SC","46":"SD","47":"TN",
+  "48":"TX","49":"UT","50":"VT","51":"VA","53":"WA","54":"WV","55":"WI",
+  "56":"WY"
+};
+
 async function buildMap() {
   const us = await d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
 
@@ -437,21 +454,26 @@ async function buildMap() {
 
   const svg = d3.select('#us-map').attr('viewBox', `0 0 ${width} ${height}`);
 
-  // State fills
+  // State fills — color by summited status
   svg.append('g')
+    .attr('id', 'states-g')
     .selectAll('path')
     .data(topojson.feature(us, us.objects.states).features)
     .join('path')
-    .attr('class', 'state-fill')
+    .attr('class', d => {
+      const abbr = FIPS[String(d.id).padStart(2,'0')];
+      return 'state-fill ' + (sumMap[abbr] ? 'state-done' : 'state-todo');
+    })
+    .attr('data-fips', d => String(d.id).padStart(2,'0'))
     .attr('d', path);
 
-  // State borders
+  // State borders (interior)
   svg.append('path')
     .datum(topojson.mesh(us, us.objects.states, (a,b) => a !== b))
     .attr('class', 'state-border')
     .attr('d', path);
 
-  // Nation border
+  // Nation outline
   svg.append('path')
     .datum(topojson.mesh(us, us.objects.states, (a,b) => a === b))
     .attr('class', 'nation-border')
@@ -471,8 +493,8 @@ async function buildMap() {
       .attr('data-state', hp.state)
       .style('cursor','pointer');
 
-    g.append('circle').attr('class','ring').attr('cx',x).attr('cy',y).attr('r',9);
-    g.append('circle').attr('class','core').attr('cx',x).attr('cy',y).attr('r',5);
+    g.append('circle').attr('class','ring').attr('cx',x).attr('cy',y).attr('r', done ? 10 : 8);
+    g.append('circle').attr('class','core').attr('cx',x).attr('cy',y).attr('r', done ? 6 : 4);
 
     g.on('mouseenter', (e) => showTT(hp, e.clientX, e.clientY))
      .on('mousemove',  (e) => posTT(e.clientX, e.clientY))
@@ -486,6 +508,12 @@ function updateDots() {
     const state = this.getAttribute('data-state');
     const done = !!sumMap[state];
     d3.select(this).attr('class', 'hp-dot ' + (done ? 'done' : 'todo'));
+  });
+  // Also repaint state fills
+  d3.selectAll('.state-fill').each(function() {
+    const abbr = FIPS[this.getAttribute('data-fips')];
+    this.classList.toggle('state-done', !!sumMap[abbr]);
+    this.classList.toggle('state-todo', !sumMap[abbr]);
   });
 }
 
