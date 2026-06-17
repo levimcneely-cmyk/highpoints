@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Summit Log — US Highpoints</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --forest: #1a2e1a;
+  --forest-mid: #2d4a2a;
+  --moss: #a3c47a;
+  --moss-light: #c8dfa8;
+  --stone: #f5f0e8;
+  --ink: #1c1c1a;
+  --muted: #6b6b60;
+  --dot-done: #6ab547;
+  --dot-todo: #8a9e7a;
+  --card-bg: rgba(20,38,20,0.98);
+  --card-border: #3a5c2a;
+}
+body { font-family:'Inter',sans-serif; background:var(--forest); color:var(--stone); min-height:100vh; overflow-x:hidden; }
+
+nav {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1.1rem 2rem;
+  border-bottom:0.5px solid rgba(163,196,122,0.2);
+  position:sticky; top:0; z-index:100; background:var(--forest);
+}
+.nav-logo { font-family:'Playfair Display',serif; font-size:20px; color:var(--stone); }
+.nav-logo span { color:var(--moss); }
+.nav-links { display:flex; gap:1.75rem; align-items:center; }
+nav a { color:var(--moss-light); text-decoration:none; font-size:13px; font-weight:500; letter-spacing:0.04em; opacity:0.8; transition:opacity 0.15s; }
+nav a:hover { opacity:1; }
+
+.hero-stats { display:flex; gap:0; padding:1.5rem 2rem 0; border-bottom:0.5px solid rgba(163,196,122,0.15); flex-wrap:wrap; }
+.stat { padding:0 2rem 1.5rem 0; margin-right:2rem; border-right:0.5px solid rgba(163,196,122,0.15); }
+.stat:last-child { border-right:none; }
+.stat-num { font-family:'Playfair Display',serif; font-size:36px; color:var(--moss); line-height:1; }
+.stat-label { font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(245,240,232,0.5); margin-top:4px; }
+.progress-wrap { flex:1; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:1.5rem; min-width:120px; }
+.progress-track { height:4px; background:rgba(163,196,122,0.15); border-radius:2px; overflow:hidden; margin-bottom:6px; }
+.progress-fill { height:100%; background:var(--moss); border-radius:2px; transition:width 0.6s ease; }
+.progress-label { font-size:11px; color:rgba(245,240,232,0.4); text-align:right; }
+
+.map-section { padding:1.5rem 2rem 0.5rem; }
+.map-eyebrow { font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(163,196,122,0.6); margin-bottom:1rem; }
+#map-container { position:relative; width:100%; max-width:960px; margin:0 auto; background:rgba(255,255,255,0.02); border-radius:12px; border:0.5px solid rgba(163,196,122,0.12); overflow:hidden; }
+#map-container svg { display:block; width:100%; height:auto; }
+
+/* D3 map styles */
+.state-fill { fill:#243d22; stroke:#1a2e1a; stroke-width:0.8; }
+.state-border { fill:none; stroke:rgba(163,196,122,0.25); stroke-width:0.5; }
+.nation-border { fill:none; stroke:rgba(163,196,122,0.5); stroke-width:1; }
+
+.hp-dot { cursor:pointer; }
+.hp-dot .ring { fill:none; stroke-width:1.5; opacity:0; transition:opacity 0.2s; }
+.hp-dot:hover .ring { opacity:1; }
+.hp-dot .core { transition:r 0.15s; }
+.hp-dot.done .core { fill:#6ab547; }
+.hp-dot.done .ring { stroke:#6ab547; }
+.hp-dot.todo .core { fill:#6a8a60; }
+.hp-dot.todo .ring { stroke:#6a8a60; }
+.hp-dot:hover .core { r:7; }
+
+#tooltip {
+  position:fixed; pointer-events:none; z-index:200; opacity:0; transition:opacity 0.15s; max-width:290px;
+}
+#tooltip.visible { opacity:1; }
+.tt-card {
+  background:var(--card-bg); border:0.5px solid var(--card-border);
+  border-radius:10px; padding:1rem 1.1rem;
+  box-shadow:0 12px 40px rgba(0,0,0,0.6);
+}
+.tt-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:0.5rem; }
+.tt-state { font-family:'Playfair Display',serif; font-size:17px; color:var(--stone); line-height:1.2; }
+.tt-peak { font-size:12px; color:var(--moss-light); margin-bottom:0.7rem; }
+.tt-badge { font-size:10px; padding:2px 8px; border-radius:20px; font-weight:500; white-space:nowrap; margin-top:3px; }
+.tt-badge.done { background:rgba(106,181,71,0.2); color:#a3e07a; }
+.tt-badge.todo { background:rgba(106,138,96,0.2); color:#8ab878; }
+.tt-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin-bottom:0.7rem; }
+.tt-lbl { font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(245,240,232,0.4); margin-bottom:1px; }
+.tt-val { font-size:13px; font-weight:500; color:var(--stone); }
+.diff-wrap { margin-bottom:0.7rem; }
+.diff-track { height:4px; background:rgba(163,196,122,0.12); border-radius:2px; overflow:hidden; margin-top:4px; }
+.diff-fill { height:100%; border-radius:2px; }
+.tt-date-row { border-top:0.5px solid rgba(163,196,122,0.15); padding-top:0.5rem; font-size:12px; color:var(--moss); display:none; align-items:center; gap:6px; }
+.tt-link-row { margin-top:0.5rem; display:flex; gap:10px; }
+.tt-link { font-size:11px; color:rgba(163,196,122,0.5); text-decoration:none; transition:color 0.15s; }
+.tt-link:hover { color:var(--moss); }
+
+.legend { display:flex; gap:1.5rem; padding:0.75rem 2rem 1rem; align-items:center; }
+.legend-item { display:flex; align-items:center; gap:7px; font-size:12px; color:rgba(245,240,232,0.5); }
+.legend-dot { width:10px; height:10px; border-radius:50%; }
+.legend-dot.done { background:#6ab547; }
+.legend-dot.todo { background:#6a8a60; }
+
+.log-section { padding:0 2rem 2.5rem; max-width:700px; }
+.section-eyebrow { font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(163,196,122,0.6); margin-bottom:1rem; }
+.log-card { background:rgba(255,255,255,0.04); border:0.5px solid rgba(163,196,122,0.2); border-radius:12px; padding:1.5rem; }
+.log-card-title { font-size:15px; font-weight:500; color:var(--stone); margin-bottom:1.25rem; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.form-group { display:flex; flex-direction:column; gap:5px; }
+.form-group label { font-size:11px; letter-spacing:0.07em; text-transform:uppercase; color:rgba(245,240,232,0.45); }
+.form-group select,
+.form-group input[type="date"],
+.form-group input[type="text"],
+.form-group textarea {
+  background:rgba(255,255,255,0.06); border:0.5px solid rgba(163,196,122,0.25);
+  border-radius:7px; color:var(--stone); font-family:'Inter',sans-serif;
+  font-size:13px; padding:8px 11px; outline:none; transition:border-color 0.15s;
+}
+.form-group select:focus,.form-group input:focus,.form-group textarea:focus { border-color:var(--moss); }
+.form-group select option { background:var(--forest); color:var(--stone); }
+.form-group textarea { resize:none; height:64px; }
+.submit-btn { margin-top:12px; background:var(--moss); color:var(--forest); border:none; border-radius:7px; padding:10px 22px; font-size:13px; font-weight:500; font-family:'Inter',sans-serif; cursor:pointer; transition:background 0.15s; }
+.submit-btn:hover { background:var(--moss-light); }
+
+.recent-section { padding:0 2rem 3rem; max-width:700px; }
+.recent-list { border-top:0.5px solid rgba(163,196,122,0.15); }
+.recent-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:0.5px solid rgba(163,196,122,0.1); gap:12px; cursor:pointer; transition:opacity 0.15s; }
+.recent-row:hover { opacity:0.75; }
+.recent-state { font-size:14px; font-weight:500; color:var(--stone); }
+.recent-peak { font-size:12px; color:rgba(245,240,232,0.5); margin-top:2px; }
+.recent-date { font-size:12px; color:var(--moss); text-align:right; white-space:nowrap; }
+.recent-guide { font-size:11px; color:rgba(163,196,122,0.4); }
+.recent-guide a { color:inherit; text-decoration:none; }
+.recent-guide a:hover { color:var(--moss); }
+
+footer { border-top:0.5px solid rgba(163,196,122,0.1); padding:1.5rem 2rem; font-size:12px; color:rgba(245,240,232,0.3); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+footer a { color:rgba(163,196,122,0.5); text-decoration:none; }
+footer a:hover { color:var(--moss); }
+</style>
+</head>
+<body>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  YOUR DATA — update SUMMITED with your real summits
+// ══════════════════════════════════════════════════════
+const SUMMITED = [
+  { state:"FL", date:"2017-02-20", conditions:"", partners:"", notes:"" },
+  { state:"TN", date:"2020-09-04", conditions:"", partners:"", notes:"" },
+  { state:"GA", date:"2020-09-05", conditions:"", partners:"", notes:"" },
+  { state:"NC", date:"2020-09-05", conditions:"", partners:"", notes:"" },
+  { state:"SC", date:"2020-09-05", conditions:"", partners:"", notes:"" },
+  { state:"KY", date:"2020-09-06", conditions:"", partners:"", notes:"" },
+  { state:"VA", date:"2020-09-06", conditions:"", partners:"", notes:"" },
+  { state:"AZ", date:"2021-09-05", conditions:"", partners:"", notes:"" },
+  { state:"DE", date:"2022-05-20", conditions:"", partners:"", notes:"" },
+  { state:"MD", date:"2022-05-21", conditions:"", partners:"", notes:"" },
+  { state:"PA", date:"2022-05-21", conditions:"", partners:"", notes:"" },
+  { state:"WV", date:"2022-05-21", conditions:"", partners:"", notes:"" },
+  { state:"IN", date:"2022-05-22", conditions:"", partners:"", notes:"" },
+  { state:"OH", date:"2022-05-22", conditions:"", partners:"", notes:"" },
+  { state:"KS", date:"2026-05-16", conditions:"", partners:"", notes:"" },
+];
+
+const HIGHPOINTS = [
+  {state:"AK",name:"Alaska",        peak:"Denali",                 elev:20320,gain:24500,dist:56,  diff:10,effort:1000,lat:63.069,lng:-151.007,guide:"https://highpoint.guide/ak/"},
+  {state:"WY",name:"Wyoming",       peak:"Gannett Peak",           elev:13804,gain:8650, dist:40.4,diff:9, effort:506, lat:43.184,lng:-109.654,guide:"https://highpoint.guide/wy/"},
+  {state:"WA",name:"Washington",    peak:"Mount Rainier",          elev:14411,gain:9100, dist:16,  diff:9, effort:366, lat:46.853,lng:-121.731,guide:"https://highpoint.guide/wa/"},
+  {state:"MT",name:"Montana",       peak:"Granite Peak",           elev:12799,gain:7700, dist:22.2,diff:9, effort:368, lat:45.163,lng:-109.808,guide:"https://highpoint.guide/mt/"},
+  {state:"CA",name:"California",    peak:"Mount Whitney",          elev:14494,gain:6750, dist:21.4,diff:7, effort:263, lat:36.578,lng:-118.292,guide:"https://highpoint.guide/ca/"},
+  {state:"UT",name:"Utah",          peak:"Kings Peak",             elev:13528,gain:5350, dist:28.8,diff:7, effort:291, lat:40.776,lng:-110.373,guide:"https://highpoint.guide/ut/"},
+  {state:"CO",name:"Colorado",      peak:"Mount Elbert",           elev:14440,gain:5000, dist:9,   diff:6, effort:147, lat:39.118,lng:-106.445,guide:"https://highpoint.guide/co/"},
+  {state:"OR",name:"Oregon",        peak:"Mount Hood",             elev:11239,gain:5300, dist:8,   diff:8, effort:222, lat:45.374,lng:-121.696,guide:"https://highpoint.guide/or/"},
+  {state:"ID",name:"Idaho",         peak:"Borah Peak",             elev:12662,gain:5550, dist:6.8, diff:8, effort:181, lat:44.137,lng:-113.781,guide:"https://highpoint.guide/id/"},
+  {state:"NV",name:"Nevada",        peak:"Boundary Peak",          elev:13140,gain:4400, dist:7.4, diff:6, effort:126, lat:37.846,lng:-118.351,guide:"https://highpoint.guide/nv/"},
+  {state:"AZ",name:"Arizona",       peak:"Humphreys Peak",         elev:12633,gain:3500, dist:9,   diff:6, effort:120, lat:35.347,lng:-111.678,guide:"https://highpoint.guide/az/"},
+  {state:"NY",name:"New York",      peak:"Mount Marcy",            elev:5344, gain:3200, dist:14.8,diff:5, effort:151, lat:44.113,lng:-73.924, guide:"https://highpoint.guide/ny/"},
+  {state:"ME",name:"Maine",         peak:"Katahdin",               elev:5268, gain:4200, dist:10.4,diff:5, effort:141, lat:45.904,lng:-68.921, guide:"https://highpoint.guide/me/"},
+  {state:"NM",name:"New Mexico",    peak:"Wheeler Peak",           elev:13161,gain:3250, dist:6.2, diff:6, effort:98,  lat:36.557,lng:-105.417,guide:"https://highpoint.guide/nm/"},
+  {state:"TX",name:"Texas",         peak:"Guadalupe Peak",         elev:8749, gain:2950, dist:8.4, diff:5, effort:106, lat:31.891,lng:-104.860,guide:"https://highpoint.guide/tx/"},
+  {state:"VA",name:"Virginia",      peak:"Mount Rogers",           elev:5729, gain:1500, dist:8.6, diff:4, effort:81,  lat:36.660,lng:-81.544, guide:"https://highpoint.guide/va/"},
+  {state:"OK",name:"Oklahoma",      peak:"Black Mesa",             elev:4975, gain:775,  dist:8.6, diff:4, effort:68,  lat:36.931,lng:-102.998,guide:"https://highpoint.guide/ok/"},
+  {state:"SD",name:"South Dakota",  peak:"Black Elk Peak",         elev:7242, gain:1500, dist:5.8, diff:4, effort:64,  lat:43.866,lng:-103.532,guide:"https://highpoint.guide/sd/"},
+  {state:"MN",name:"Minnesota",     peak:"Eagle Mountain",         elev:2301, gain:600,  dist:7,   diff:4, effort:55,  lat:47.899,lng:-90.561, guide:"https://highpoint.guide/mn/"},
+  {state:"VT",name:"Vermont",       peak:"Mount Mansfield",        elev:4393, gain:1053, dist:2.8, diff:3, effort:28,  lat:44.544,lng:-72.814, guide:"https://highpoint.guide/vt/"},
+  {state:"CT",name:"Connecticut",   peak:"Mount Frissell",         elev:2380, gain:862,  dist:2.3, diff:3, effort:31,  lat:42.050,lng:-73.484, guide:"https://highpoint.guide/ct/"},
+  {state:"ND",name:"North Dakota",  peak:"White Butte",            elev:3506, gain:400,  dist:3.4, diff:2, effort:29,  lat:46.387,lng:-103.302,guide:"https://highpoint.guide/nd/"},
+  {state:"HI",name:"Hawaii",        peak:"Mauna Kea",              elev:13796,gain:230,  dist:0.4, diff:2, effort:7,   lat:19.821,lng:-155.468,guide:"https://highpoint.guide/hi/"},
+  {state:"MD",name:"Maryland",      peak:"Hoye Crest",             elev:3360, gain:750,  dist:2.2, diff:3, effort:27,  lat:39.236,lng:-79.487, guide:"https://highpoint.guide/md/"},
+  {state:"TN",name:"Tennessee",     peak:"Kuwohi",                 elev:6643, gain:330,  dist:1,   diff:2, effort:12,  lat:35.563,lng:-83.498, guide:"https://highpoint.guide/tn/"},
+  {state:"GA",name:"Georgia",       peak:"Brasstown Bald",         elev:4784, gain:400,  dist:1,   diff:2, effort:1,   lat:34.874,lng:-83.811, guide:"https://highpoint.guide/ga/"},
+  {state:"IL",name:"Illinois",      peak:"Charles Mound",          elev:1235, gain:275,  dist:2.5, diff:2, effort:21,  lat:42.508,lng:-90.240, guide:"https://highpoint.guide/il/"},
+  {state:"NC",name:"North Carolina",peak:"Mount Mitchell",         elev:6684, gain:100,  dist:0.2, diff:1, effort:3,   lat:35.765,lng:-82.265, guide:"https://highpoint.guide/nc/"},
+  {state:"AR",name:"Arkansas",      peak:"Magazine Mountain",      elev:2753, gain:225,  dist:1,   diff:2, effort:10,  lat:35.164,lng:-93.644, guide:"https://highpoint.guide/ar/"},
+  {state:"LA",name:"Louisiana",     peak:"Driskill Mountain",      elev:535,  gain:150,  dist:1.8, diff:2, effort:14,  lat:32.424,lng:-92.899, guide:"https://highpoint.guide/la/"},
+  {state:"WV",name:"West Virginia", peak:"Spruce Knob",            elev:4863, gain:20,   dist:0.3, diff:1, effort:2,   lat:38.700,lng:-79.532, guide:"https://highpoint.guide/wv/"},
+  {state:"WI",name:"Wisconsin",     peak:"Timms Hill",             elev:1951, gain:120,  dist:0.4, diff:1, effort:5,   lat:45.451,lng:-90.195, guide:"https://highpoint.guide/wi/"},
+  {state:"SC",name:"South Carolina",peak:"Sassafras Mountain",     elev:3533, gain:50,   dist:0.15,diff:1, effort:2,   lat:35.065,lng:-82.777, guide:"https://highpoint.guide/sc/"},
+  {state:"MO",name:"Missouri",      peak:"Taum Sauk Mountain",     elev:1772, gain:30,   dist:0.4, diff:1, effort:3,   lat:37.571,lng:-90.727, guide:"https://highpoint.guide/mo/"},
+  {state:"NH",name:"New Hampshire", peak:"Mount Washington",       elev:6288, gain:20,   dist:0.1, diff:1, effort:0,   lat:44.271,lng:-71.303, guide:"https://highpoint.guide/nh/"},
+  {state:"KY",name:"Kentucky",      peak:"Black Mountain",         elev:4145, gain:30,   dist:0.1, diff:1, effort:1,   lat:36.908,lng:-82.894, guide:"https://highpoint.guide/ky/"},
+  {state:"NJ",name:"New Jersey",    peak:"High Point",             elev:1803, gain:40,   dist:0.2, diff:1, effort:2,   lat:41.321,lng:-74.664, guide:"https://highpoint.guide/nj/"},
+  {state:"NE",name:"Nebraska",      peak:"Panorama Point",         elev:5424, gain:0,    dist:0.1, diff:1, effort:0,   lat:41.003,lng:-104.030,guide:"https://highpoint.guide/ne/"},
+  {state:"MA",name:"Massachusetts", peak:"Mount Greylock",         elev:3491, gain:20,   dist:0.1, diff:1, effort:1,   lat:42.637,lng:-73.166, guide:"https://highpoint.guide/ma/"},
+  {state:"KS",name:"Kansas",        peak:"Mount Sunflower",        elev:4039, gain:0,    dist:0.1, diff:1, effort:0,   lat:39.022,lng:-102.038,guide:"https://highpoint.guide/ks/"},
+  {state:"MI",name:"Michigan",      peak:"Mount Arvon",            elev:1979, gain:10,   dist:0.1, diff:1, effort:0,   lat:46.757,lng:-88.155, guide:"https://highpoint.guide/mi/"},
+  {state:"RI",name:"Rhode Island",  peak:"Jerimoth Hill",          elev:812,  gain:0,    dist:0.2, diff:1, effort:1,   lat:41.851,lng:-71.778, guide:"https://highpoint.guide/ri/"},
+  {state:"PA",name:"Pennsylvania",  peak:"Mount Davis",            elev:3213, gain:0,    dist:0.1, diff:1, effort:0,   lat:39.786,lng:-79.176, guide:"https://highpoint.guide/pa/"},
+  {state:"AL",name:"Alabama",       peak:"Cheaha Mountain",        elev:2407, gain:0,    dist:0.1, diff:1, effort:0,   lat:33.486,lng:-85.809, guide:"https://highpoint.guide/al/"},
+  {state:"IA",name:"Iowa",          peak:"Hawkeye Point",          elev:1670, gain:0,    dist:0.1, diff:1, effort:0,   lat:43.460,lng:-95.709, guide:"https://highpoint.guide/ia/"},
+  {state:"OH",name:"Ohio",          peak:"Campbell Hill",          elev:1550, gain:0,    dist:0.1, diff:1, effort:0,   lat:40.366,lng:-83.717, guide:"https://highpoint.guide/oh/"},
+  {state:"IN",name:"Indiana",       peak:"Hoosier Hill",           elev:1257, gain:0,    dist:0.1, diff:1, effort:0,   lat:40.000,lng:-84.845, guide:"https://highpoint.guide/in/"},
+  {state:"MS",name:"Mississippi",   peak:"Woodall Mountain",       elev:806,  gain:0,    dist:0.1, diff:1, effort:0,   lat:34.788,lng:-88.241, guide:"https://highpoint.guide/ms/"},
+  {state:"DE",name:"Delaware",      peak:"Ebright Azimuth",        elev:448,  gain:0,    dist:0.1, diff:1, effort:0,   lat:39.836,lng:-75.519, guide:"https://highpoint.guide/de/"},
+  {state:"FL",name:"Florida",       peak:"Britton Hill",           elev:345,  gain:0,    dist:0.1, diff:1, effort:0,   lat:30.888,lng:-86.282, guide:"https://highpoint.guide/fl/"},
+];
+</script>
+
+<nav>
+  <div class="nav-logo">Summit<span>Log</span></div>
+  <div class="nav-links">
+    <a href="#map">Map</a>
+    <a href="#log">Log summit</a>
+    <a href="https://highpoint.guide" target="_blank">Highpoint Guide ↗</a>
+  </div>
+</nav>
+
+<div class="hero-stats">
+  <div class="stat"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Summited</div></div>
+  <div class="stat"><div class="stat-num" id="stat-remain">50</div><div class="stat-label">Remaining</div></div>
+  <div class="stat"><div class="stat-num" id="stat-highest">—</div><div class="stat-label">Highest summited</div></div>
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-label" id="progress-label">0 of 50</div>
+  </div>
+</div>
+
+<div class="map-section" id="map">
+  <p class="map-eyebrow">Hover any dot — click to open the peak profile</p>
+  <div id="map-container"><svg id="us-map" viewBox="0 0 960 600"></svg></div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot done"></div>Summited</div>
+  <div class="legend-item"><div class="legend-dot todo"></div>Not yet</div>
+</div>
+
+<div class="log-section" id="log">
+  <p class="section-eyebrow">Log a summit</p>
+  <div class="log-card">
+    <div class="log-card-title">Mark a new highpoint</div>
+    <div class="form-row">
+      <div class="form-group"><label>State</label><select id="form-state"></select></div>
+      <div class="form-group"><label>Date summited</label><input type="date" id="form-date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Conditions</label><input type="text" id="form-conditions" placeholder="e.g. clear skies, light wind"></div>
+      <div class="form-group"><label>Trip partners</label><input type="text" id="form-partners" placeholder="Solo, or names"></div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="form-notes" placeholder="Trail notes, memories, beta..."></textarea></div>
+    <button class="submit-btn" id="form-submit">Mark summited</button>
+    <p id="form-msg" style="margin-top:10px;font-size:12px;display:none"></p>
+  </div>
+</div>
+
+<div class="recent-section">
+  <p class="section-eyebrow">Recent summits</p>
+  <div class="recent-list" id="recent-list"></div>
+</div>
+
+<footer>
+  <span>Built for the summit obsessed</span>
+  <span>Data via <a href="https://highpoint.guide" target="_blank">highpoint.guide</a> · Martin Classification · VanderHeide Effort Scale</span>
+</footer>
+
+<!-- TOOLTIP -->
+<div id="tooltip">
+  <div class="tt-card">
+    <div class="tt-header">
+      <div><div class="tt-state" id="tt-state"></div><div class="tt-peak" id="tt-peak"></div></div>
+      <div class="tt-badge" id="tt-badge"></div>
+    </div>
+    <div class="tt-grid">
+      <div><div class="tt-lbl">Elevation</div><div class="tt-val" id="tt-elev"></div></div>
+      <div><div class="tt-lbl">Gain</div><div class="tt-val" id="tt-gain"></div></div>
+      <div><div class="tt-lbl">Distance</div><div class="tt-val" id="tt-dist"></div></div>
+      <div><div class="tt-lbl">Effort score</div><div class="tt-val" id="tt-effort"></div></div>
+    </div>
+    <div class="diff-wrap">
+      <div class="tt-lbl">Martin difficulty (0–10)</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="diff-track" style="flex:1"><div class="diff-fill" id="tt-diff-bar"></div></div>
+        <div class="tt-val" id="tt-diff-num" style="min-width:28px;text-align:right"></div>
+      </div>
+    </div>
+    <div class="tt-date-row" id="tt-date-row">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+      <span id="tt-date"></span>
+    </div>
+    <div class="tt-link-row">
+      <a class="tt-link" id="tt-profile-link" href="#">View peak profile →</a>
+      <a class="tt-link" id="tt-guide-link" href="#" target="_blank">highpoint.guide ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- D3 + TopoJSON -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+const sumMap = {};
+SUMMITED.forEach(s => { sumMap[s.state] = s; });
+
+// ── STATS ──
+function buildStats() {
+  const done = HIGHPOINTS.filter(h => sumMap[h.state]);
+  const n = done.length;
+  document.getElementById('stat-done').textContent = n;
+  document.getElementById('stat-remain').textContent = 50 - n;
+  const highest = [...done].sort((a,b) => b.elev - a.elev)[0];
+  document.getElementById('stat-highest').textContent = highest ? highest.elev.toLocaleString() + ' ft' : '—';
+  document.getElementById('progress-fill').style.width = (n/50*100).toFixed(1) + '%';
+  document.getElementById('progress-label').textContent = n + ' of 50 · ' + Math.round(n/50*100) + '%';
+}
+
+// ── FORM ──
+function buildFormSelect() {
+  const sel = document.getElementById('form-state');
+  sel.innerHTML = '';
+  HIGHPOINTS.filter(h => !sumMap[h.state])
+    .sort((a,b) => a.name.localeCompare(b.name))
+    .forEach(h => {
+      const o = document.createElement('option');
+      o.value = h.state;
+      o.textContent = h.name + ' — ' + h.peak;
+      sel.appendChild(o);
+    });
+}
+
+document.getElementById('form-submit').addEventListener('click', () => {
+  const state = document.getElementById('form-state').value;
+  const date  = document.getElementById('form-date').value;
+  if (!state || !date) { msg('Please select a state and date.', true); return; }
+  sumMap[state] = {
+    state, date,
+    conditions: document.getElementById('form-conditions').value,
+    partners:   document.getElementById('form-partners').value,
+    notes:      document.getElementById('form-notes').value,
+  };
+  buildStats(); buildRecent(); buildFormSelect(); updateDots();
+  msg('✓ Logged! Add to the SUMMITED array in the HTML to make it permanent.', false);
+});
+
+function msg(t, err) {
+  const m = document.getElementById('form-msg');
+  m.textContent = t; m.style.color = err ? '#f09595' : 'var(--moss)'; m.style.display = 'block';
+  setTimeout(() => m.style.display = 'none', 6000);
+}
+
+// ── RECENT ──
+function buildRecent() {
+  const list = document.getElementById('recent-list');
+  list.innerHTML = '';
+  const all = Object.values(sumMap).sort((a,b) => b.date.localeCompare(a.date)).slice(0,8);
+  all.forEach(s => {
+    const hp = HIGHPOINTS.find(h => h.state === s.state);
+    if (!hp) return;
+    const d = new Date(s.date + 'T12:00:00');
+    const ds = d.toLocaleDateString('en-US', {month:'short', year:'numeric'});
+    const row = document.createElement('div');
+    row.className = 'recent-row';
+    row.innerHTML = `<div><div class="recent-state">${hp.name}</div><div class="recent-peak">${hp.peak} · ${hp.elev.toLocaleString()} ft</div></div><div style="text-align:right"><div class="recent-date">${ds}</div><div class="recent-guide"><a href="${hp.guide}" target="_blank">highpoint.guide ↗</a></div></div>`;
+    row.addEventListener('click', () => window.location.href = 'peak.html?state=' + hp.state);
+    list.appendChild(row);
+  });
+}
+
+// ── TOOLTIP ──
+const tooltip = document.getElementById('tooltip');
+let activeHp = null;
+
+function showTT(hp, x, y) {
+  activeHp = hp;
+  const log = sumMap[hp.state];
+  document.getElementById('tt-state').textContent = hp.name;
+  document.getElementById('tt-peak').textContent = hp.peak;
+  document.getElementById('tt-elev').textContent = hp.elev.toLocaleString() + ' ft';
+  document.getElementById('tt-gain').textContent = hp.gain > 0 ? hp.gain.toLocaleString() + ' ft' : 'Drive-up';
+  document.getElementById('tt-dist').textContent = hp.dist + ' mi RT';
+  document.getElementById('tt-effort').textContent = hp.effort + ' / 1000';
+  const bar = document.getElementById('tt-diff-bar');
+  bar.style.width = (hp.diff/10*100) + '%';
+  bar.style.background = diffColor(hp.diff);
+  document.getElementById('tt-diff-num').textContent = hp.diff + '/10';
+  document.getElementById('tt-guide-link').href = hp.guide;
+  document.getElementById('tt-profile-link').href = 'peak.html?state=' + hp.state;
+
+  const badge = document.getElementById('tt-badge');
+  const dateRow = document.getElementById('tt-date-row');
+  if (log) {
+    badge.textContent = '✓ Summited'; badge.className = 'tt-badge done';
+    const d = new Date(log.date + 'T12:00:00');
+    document.getElementById('tt-date').textContent =
+      d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) +
+      (log.partners ? ' · ' + log.partners : '');
+    dateRow.style.display = 'flex';
+  } else {
+    badge.textContent = 'Not yet'; badge.className = 'tt-badge todo';
+    dateRow.style.display = 'none';
+  }
+  posTT(x, y);
+  tooltip.classList.add('visible');
+}
+
+function posTT(x, y) {
+  const w = 290, h = 280, pad = 12;
+  let left = x + 16, top = y - 80;
+  if (left + w > window.innerWidth - pad) left = x - w - 16;
+  if (top < pad) top = pad;
+  if (top + h > window.innerHeight - pad) top = window.innerHeight - h - pad;
+  tooltip.style.left = left + 'px';
+  tooltip.style.top  = top + 'px';
+}
+
+function hideTT() { tooltip.classList.remove('visible'); activeHp = null; }
+
+function diffColor(d) {
+  if (d <= 2) return '#a3c47a';
+  if (d <= 4) return '#d4b96a';
+  if (d <= 6) return '#e0895a';
+  if (d <= 8) return '#d05540';
+  return '#b83030';
+}
+
+// ── D3 MAP ──
+async function buildMap() {
+  const us = await d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
+
+  const width = 960, height = 600;
+  const projection = d3.geoAlbersUsa().scale(1300).translate([width/2, height/2]);
+  const path = d3.geoPath().projection(projection);
+
+  const svg = d3.select('#us-map').attr('viewBox', `0 0 ${width} ${height}`);
+
+  // State fills
+  svg.append('g')
+    .selectAll('path')
+    .data(topojson.feature(us, us.objects.states).features)
+    .join('path')
+    .attr('class', 'state-fill')
+    .attr('d', path);
+
+  // State borders
+  svg.append('path')
+    .datum(topojson.mesh(us, us.objects.states, (a,b) => a !== b))
+    .attr('class', 'state-border')
+    .attr('d', path);
+
+  // Nation border
+  svg.append('path')
+    .datum(topojson.mesh(us, us.objects.states, (a,b) => a === b))
+    .attr('class', 'nation-border')
+    .attr('d', path);
+
+  // Dots
+  const dotsG = svg.append('g').attr('id', 'dots-g');
+
+  HIGHPOINTS.forEach(hp => {
+    const proj = projection([hp.lng, hp.lat]);
+    if (!proj) return;
+    const [x, y] = proj;
+    const done = !!sumMap[hp.state];
+
+    const g = dotsG.append('g')
+      .attr('class', 'hp-dot ' + (done ? 'done' : 'todo'))
+      .attr('data-state', hp.state)
+      .style('cursor','pointer');
+
+    g.append('circle').attr('class','ring').attr('cx',x).attr('cy',y).attr('r',9);
+    g.append('circle').attr('class','core').attr('cx',x).attr('cy',y).attr('r',5);
+
+    g.on('mouseenter', (e) => showTT(hp, e.clientX, e.clientY))
+     .on('mousemove',  (e) => posTT(e.clientX, e.clientY))
+     .on('mouseleave', hideTT)
+     .on('click', () => window.location.href = 'peak.html?state=' + hp.state);
+  });
+}
+
+function updateDots() {
+  d3.selectAll('.hp-dot').each(function() {
+    const state = this.getAttribute('data-state');
+    const done = !!sumMap[state];
+    d3.select(this).attr('class', 'hp-dot ' + (done ? 'done' : 'todo'));
+  });
+}
+
+buildStats();
+buildFormSelect();
+buildRecent();
+buildMap();
+</script>
+</body>
+</html>
