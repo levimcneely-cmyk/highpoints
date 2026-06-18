@@ -3,7 +3,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Peak Profile — Summit Log</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -18,7 +20,9 @@
   --card-bg: rgba(255,255,255,0.04);
   --card-border: rgba(163,196,122,0.2);
 }
-body { font-family:'Inter',sans-serif; background:var(--forest); color:var(--stone); min-height:100vh; }
+body { font-family:'Inter',sans-serif; background:var(--forest); color:var(--stone); min-height:100vh; -webkit-tap-highlight-color:transparent; }
+:root { --safe-bottom: env(safe-area-inset-bottom,0px); }
+footer { padding-bottom: calc(1.5rem + var(--safe-bottom)) !important; }
 
 nav {
   display:flex; align-items:center; justify-content:space-between;
@@ -154,6 +158,7 @@ nav a:hover { opacity:1; }
   display:block;
 }
 .nearby-card:hover { border-color:rgba(163,196,122,0.4); }
+.nearby-card { min-height:80px; }
 .nearby-state { font-size:13px; font-weight:500; color:var(--stone); }
 .nearby-peak { font-size:11px; color:var(--stone-dim); margin-top:2px; }
 .nearby-dist { font-size:11px; color:var(--moss); margin-top:6px; }
@@ -165,12 +170,26 @@ footer { border-top:0.5px solid rgba(163,196,122,0.1); padding:1.5rem 2rem; font
 footer a { color:rgba(163,196,122,0.5); text-decoration:none; }
 footer a:hover { color:var(--moss); }
 
-@media (max-width:640px) {
-  .hero { grid-template-columns:1fr; }
+/* ── MOBILE ── */
+@media (max-width: 767px) {
+  nav { padding:1rem 1.25rem; }
+  .back-link { padding:1rem 1.25rem 0; font-size:12px; }
+  .hero { grid-template-columns:1fr; padding:1.5rem 1.25rem 2rem; gap:1rem; }
+  .hero-name { font-size:30px; }
   .hero-elev { text-align:left; }
+  .elev-num { font-size:38px; }
   .stats-strip { grid-template-columns:1fr 1fr; }
-  .diff-card { grid-template-columns:1fr; }
-  .effort-display { border-left:none; border-top:0.5px solid rgba(163,196,122,0.15); padding-top:1rem; }
+  .strip-stat { padding:1rem 1.25rem; }
+  .strip-val { font-size:17px; }
+  .section { padding:1.5rem 1.25rem; }
+  .diff-card { grid-template-columns:1fr; gap:1.25rem; }
+  .effort-display { border-left:none; border-top:0.5px solid rgba(163,196,122,0.15); padding-top:1.25rem; }
+  .trip-card { padding:1.1rem; }
+  .links-card .link-row { padding:0.9rem 1.1rem; min-height:56px; }
+  .nearby-grid { grid-template-columns:1fr 1fr; }
+  footer { flex-direction:column; padding:1.25rem; gap:4px; }
+  /* Prevent iOS zoom on form inputs */
+  input, select, textarea { font-size:16px !important; }
 }
 </style>
 </head>
