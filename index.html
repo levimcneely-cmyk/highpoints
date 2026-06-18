@@ -3,7 +3,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Summit Log — US Highpoints</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -20,37 +22,61 @@
   --dot-todo: #3a3a2e;
   --card-bg: rgba(20,38,20,0.98);
   --card-border: #3a5c2a;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
 }
-body { font-family:'Inter',sans-serif; background:var(--forest); color:var(--stone); min-height:100vh; overflow-x:hidden; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family:'Inter',sans-serif; background:var(--forest); color:var(--stone); min-height:100vh; overflow-x:hidden; -webkit-tap-highlight-color: transparent; }
 
+/* ── NAV ── */
 nav {
   display:flex; align-items:center; justify-content:space-between;
-  padding:1.1rem 2rem;
+  padding:1rem 1.25rem;
+  padding-top: calc(1rem + var(--safe-top));
   border-bottom:0.5px solid rgba(163,196,122,0.2);
   position:sticky; top:0; z-index:100; background:var(--forest);
 }
 .nav-logo { font-family:'Playfair Display',serif; font-size:20px; color:var(--stone); }
 .nav-logo span { color:var(--moss); }
-.nav-links { display:flex; gap:1.75rem; align-items:center; }
-nav a { color:var(--moss-light); text-decoration:none; font-size:13px; font-weight:500; letter-spacing:0.04em; opacity:0.8; transition:opacity 0.15s; }
-nav a:hover { opacity:1; }
+.nav-links { display:flex; gap:1.25rem; align-items:center; }
+nav a { color:var(--moss-light); text-decoration:none; font-size:13px; font-weight:500; letter-spacing:0.04em; opacity:0.8; }
+.nav-links .nav-guide { display:none; }
 
-.hero-stats { display:flex; gap:0; padding:1.5rem 2rem 0; border-bottom:0.5px solid rgba(163,196,122,0.15); flex-wrap:wrap; }
-.stat { padding:0 2rem 1.5rem 0; margin-right:2rem; border-right:0.5px solid rgba(163,196,122,0.15); }
-.stat:last-child { border-right:none; }
-.stat-num { font-family:'Playfair Display',serif; font-size:36px; color:var(--moss); line-height:1; }
-.stat-label { font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(245,240,232,0.5); margin-top:4px; }
-.progress-wrap { flex:1; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:1.5rem; min-width:120px; }
-.progress-track { height:4px; background:rgba(163,196,122,0.15); border-radius:2px; overflow:hidden; margin-bottom:6px; }
-.progress-fill { height:100%; background:var(--moss); border-radius:2px; transition:width 0.6s ease; }
+/* ── HERO STATS ── */
+.hero-stats {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:0;
+  padding:1.25rem 1.25rem 0;
+  border-bottom:0.5px solid rgba(163,196,122,0.15);
+}
+.stat {
+  padding:0 0 1.25rem 0;
+  border-right:0.5px solid rgba(163,196,122,0.15);
+  padding-right: 1rem;
+  margin-right: 0;
+}
+.stat:nth-child(2) { padding-left:1rem; border-right:none; }
+.stat:nth-child(3) { display:none; } /* hide "highest" on mobile — shown in progress row */
+.stat-num { font-family:'Playfair Display',serif; font-size:32px; color:var(--moss); line-height:1; }
+.stat-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(245,240,232,0.5); margin-top:3px; }
+.progress-wrap {
+  grid-column: 1 / -1;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding: 0.75rem 0 1.25rem;
+  border-top:0.5px solid rgba(163,196,122,0.1);
+}
+.progress-track { height:5px; background:rgba(163,196,122,0.15); border-radius:3px; overflow:hidden; margin-bottom:6px; }
+.progress-fill { height:100%; background:var(--moss); border-radius:3px; transition:width 0.6s ease; }
 .progress-label { font-size:11px; color:rgba(245,240,232,0.4); text-align:right; }
 
-.map-section { padding:1.5rem 2rem 0.5rem; }
-.map-eyebrow { font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(163,196,122,0.6); margin-bottom:1rem; }
-#map-container { position:relative; width:100%; max-width:960px; margin:0 auto; background:rgba(255,255,255,0.02); border-radius:12px; border:0.5px solid rgba(163,196,122,0.12); overflow:hidden; }
-#map-container svg { display:block; width:100%; height:auto; }
+/* ── MAP ── */
+.map-section { padding:1rem 1.25rem 0.25rem; }
+.map-eyebrow { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(163,196,122,0.6); margin-bottom:0.75rem; }
+#map-container { position:relative; width:100%; background:rgba(255,255,255,0.02); border-radius:10px; border:0.5px solid rgba(163,196,122,0.12); overflow:hidden; }
+#map-container svg { display:block; width:100%; height:auto; touch-action:none; }
 
-/* D3 map styles */
+/* D3 map */
 .state-fill { stroke:#131f11; stroke-width:0.8; }
 .state-todo { fill:#1e3019; }
 .state-done { fill:#2d5c1a; }
@@ -59,7 +85,6 @@ nav a:hover { opacity:1; }
 
 .hp-dot { cursor:pointer; }
 .hp-dot .ring { fill:none; stroke-width:1.5; opacity:0; transition:opacity 0.2s; }
-.hp-dot:hover .ring { opacity:1; }
 .hp-dot .core { transition:r 0.15s; }
 .hp-dot.done .core { fill:#7ed321; }
 .hp-dot.done .ring { stroke:#7ed321; }
@@ -67,8 +92,11 @@ nav a:hover { opacity:1; }
 .hp-dot.todo .ring { stroke:#5a6050; }
 .hp-dot.done .core { r:6; }
 .hp-dot.todo .core { r:4; }
-.hp-dot:hover .core { r:8; }
+.hp-dot.active .ring { opacity:1; }
+.hp-dot.active.done .core { r:8; }
+.hp-dot.active.todo .core { r:6; }
 
+/* ── DESKTOP TOOLTIP (hidden on mobile) ── */
 #tooltip {
   position:fixed; pointer-events:none; z-index:200; opacity:0; transition:opacity 0.15s; max-width:290px;
 }
@@ -92,50 +120,144 @@ nav a:hover { opacity:1; }
 .diff-fill { height:100%; border-radius:2px; }
 .tt-date-row { border-top:0.5px solid rgba(163,196,122,0.15); padding-top:0.5rem; font-size:12px; color:var(--moss); display:none; align-items:center; gap:6px; }
 .tt-link-row { margin-top:0.5rem; display:flex; gap:10px; }
-.tt-link { font-size:11px; color:rgba(163,196,122,0.5); text-decoration:none; transition:color 0.15s; }
-.tt-link:hover { color:var(--moss); }
+.tt-link { font-size:11px; color:rgba(163,196,122,0.5); text-decoration:none; }
 
-.legend { display:flex; gap:1.5rem; padding:0.75rem 2rem 1rem; align-items:center; }
-.legend-item { display:flex; align-items:center; gap:7px; font-size:12px; color:rgba(245,240,232,0.5); }
-.legend-dot { width:10px; height:10px; border-radius:50%; }
+/* ── MOBILE BOTTOM SHEET ── */
+#bottom-sheet {
+  position:fixed; bottom:0; left:0; right:0; z-index:300;
+  transform:translateY(100%);
+  transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);
+  padding-bottom: var(--safe-bottom);
+}
+#bottom-sheet.open { transform:translateY(0); }
+
+.bs-card {
+  background:#1f3a1f;
+  border-top:0.5px solid rgba(163,196,122,0.3);
+  border-radius:18px 18px 0 0;
+  padding:0 1.25rem 1.25rem;
+  box-shadow:0 -8px 40px rgba(0,0,0,0.5);
+}
+.bs-handle {
+  width:36px; height:4px; background:rgba(163,196,122,0.3);
+  border-radius:2px; margin:10px auto 1rem;
+}
+.bs-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:0.75rem; }
+.bs-state { font-family:'Playfair Display',serif; font-size:22px; color:var(--stone); line-height:1.2; }
+.bs-peak { font-size:13px; color:var(--moss-light); margin-top:2px; }
+.bs-badge { font-size:11px; padding:3px 10px; border-radius:20px; font-weight:500; flex-shrink:0; margin-top:4px; }
+.bs-badge.done { background:rgba(106,181,71,0.2); color:#a3e07a; border:0.5px solid rgba(106,181,71,0.3); }
+.bs-badge.todo { background:rgba(106,138,96,0.15); color:#8ab878; border:0.5px solid rgba(106,138,96,0.2); }
+.bs-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:1rem; }
+.bs-stat { background:rgba(255,255,255,0.04); border-radius:8px; padding:9px 11px; }
+.bs-stat-lbl { font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(245,240,232,0.4); margin-bottom:3px; }
+.bs-stat-val { font-size:15px; font-weight:500; color:var(--stone); }
+.bs-diff-label { font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(245,240,232,0.4); margin-bottom:6px; }
+.bs-diff-row { display:flex; align-items:center; gap:8px; margin-bottom:1rem; }
+.bs-diff-track { flex:1; height:5px; background:rgba(163,196,122,0.1); border-radius:3px; overflow:hidden; }
+.bs-diff-fill { height:100%; border-radius:3px; }
+.bs-diff-num { font-size:13px; font-weight:500; color:var(--stone); min-width:32px; text-align:right; }
+.bs-date-row { display:none; align-items:center; gap:6px; font-size:12px; color:var(--moss); margin-bottom:1rem; padding:0.6rem 0; border-top:0.5px solid rgba(163,196,122,0.15); border-bottom:0.5px solid rgba(163,196,122,0.15); }
+.bs-actions { display:flex; gap:10px; }
+.bs-btn-primary {
+  flex:1; background:var(--moss); color:var(--forest);
+  border:none; border-radius:10px; padding:13px;
+  font-size:14px; font-weight:500; font-family:'Inter',sans-serif;
+  cursor:pointer; text-align:center; text-decoration:none; display:block;
+}
+.bs-btn-secondary {
+  flex:1; background:rgba(255,255,255,0.06); color:var(--moss-light);
+  border:0.5px solid rgba(163,196,122,0.25); border-radius:10px; padding:13px;
+  font-size:14px; font-weight:500; font-family:'Inter',sans-serif;
+  cursor:pointer; text-align:center; text-decoration:none; display:block;
+}
+.bs-overlay {
+  position:fixed; inset:0; z-index:299;
+  background:rgba(0,0,0,0.4);
+  opacity:0; pointer-events:none;
+  transition:opacity 0.3s;
+}
+.bs-overlay.visible { opacity:1; pointer-events:all; }
+
+/* ── LEGEND ── */
+.legend { display:flex; gap:1.25rem; padding:0.6rem 1.25rem 0.75rem; align-items:center; }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:11px; color:rgba(245,240,232,0.5); }
+.legend-dot { width:9px; height:9px; border-radius:50%; }
 .legend-dot.done { background:#7ed321; }
 .legend-dot.todo { background:#3a3d30; border:1px solid #5a6050; }
 
-.log-section { padding:0 2rem 2.5rem; max-width:700px; }
-.section-eyebrow { font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(163,196,122,0.6); margin-bottom:1rem; }
-.log-card { background:rgba(255,255,255,0.04); border:0.5px solid rgba(163,196,122,0.2); border-radius:12px; padding:1.5rem; }
-.log-card-title { font-size:15px; font-weight:500; color:var(--stone); margin-bottom:1.25rem; }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+/* ── FORM ── */
+.log-section { padding:0 1.25rem 2rem; }
+.section-eyebrow { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(163,196,122,0.6); margin-bottom:0.75rem; }
+.log-card { background:rgba(255,255,255,0.04); border:0.5px solid rgba(163,196,122,0.2); border-radius:12px; padding:1.25rem; }
+.log-card-title { font-size:15px; font-weight:500; color:var(--stone); margin-bottom:1rem; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
 .form-group { display:flex; flex-direction:column; gap:5px; }
-.form-group label { font-size:11px; letter-spacing:0.07em; text-transform:uppercase; color:rgba(245,240,232,0.45); }
+.form-group label { font-size:10px; letter-spacing:0.07em; text-transform:uppercase; color:rgba(245,240,232,0.45); }
 .form-group select,
 .form-group input[type="date"],
 .form-group input[type="text"],
 .form-group textarea {
   background:rgba(255,255,255,0.06); border:0.5px solid rgba(163,196,122,0.25);
-  border-radius:7px; color:var(--stone); font-family:'Inter',sans-serif;
-  font-size:13px; padding:8px 11px; outline:none; transition:border-color 0.15s;
+  border-radius:8px; color:var(--stone); font-family:'Inter',sans-serif;
+  font-size:16px; /* 16px prevents iOS auto-zoom */
+  padding:10px 12px; outline:none; -webkit-appearance:none; appearance:none;
 }
 .form-group select:focus,.form-group input:focus,.form-group textarea:focus { border-color:var(--moss); }
 .form-group select option { background:var(--forest); color:var(--stone); }
-.form-group textarea { resize:none; height:64px; }
-.submit-btn { margin-top:12px; background:var(--moss); color:var(--forest); border:none; border-radius:7px; padding:10px 22px; font-size:13px; font-weight:500; font-family:'Inter',sans-serif; cursor:pointer; transition:background 0.15s; }
-.submit-btn:hover { background:var(--moss-light); }
+.form-group textarea { resize:none; height:70px; }
+.submit-btn {
+  margin-top:12px; width:100%; background:var(--moss); color:var(--forest);
+  border:none; border-radius:10px; padding:13px;
+  font-size:15px; font-weight:500; font-family:'Inter',sans-serif; cursor:pointer;
+}
 
-.recent-section { padding:0 2rem 3rem; max-width:700px; }
+/* ── RECENT ── */
+.recent-section { padding:0 1.25rem 2rem; }
 .recent-list { border-top:0.5px solid rgba(163,196,122,0.15); }
-.recent-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:0.5px solid rgba(163,196,122,0.1); gap:12px; cursor:pointer; transition:opacity 0.15s; }
-.recent-row:hover { opacity:0.75; }
+.recent-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 0; border-bottom:0.5px solid rgba(163,196,122,0.1);
+  gap:12px; cursor:pointer; min-height:56px; /* touch target */
+}
 .recent-state { font-size:14px; font-weight:500; color:var(--stone); }
 .recent-peak { font-size:12px; color:rgba(245,240,232,0.5); margin-top:2px; }
 .recent-date { font-size:12px; color:var(--moss); text-align:right; white-space:nowrap; }
 .recent-guide { font-size:11px; color:rgba(163,196,122,0.4); }
 .recent-guide a { color:inherit; text-decoration:none; }
-.recent-guide a:hover { color:var(--moss); }
 
-footer { border-top:0.5px solid rgba(163,196,122,0.1); padding:1.5rem 2rem; font-size:12px; color:rgba(245,240,232,0.3); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+footer {
+  border-top:0.5px solid rgba(163,196,122,0.1);
+  padding:1.25rem;
+  padding-bottom: calc(1.25rem + var(--safe-bottom));
+  font-size:11px; color:rgba(245,240,232,0.3);
+  display:flex; flex-direction:column; gap:6px;
+}
 footer a { color:rgba(163,196,122,0.5); text-decoration:none; }
-footer a:hover { color:var(--moss); }
+
+/* ── DESKTOP overrides ── */
+@media (min-width: 768px) {
+  nav { padding:1.1rem 2rem; }
+  .nav-links .nav-guide { display:block; }
+  .hero-stats { display:flex; padding:1.5rem 2rem 0; }
+  .stat { padding:0 2rem 1.5rem 0; margin-right:2rem; border-right:0.5px solid rgba(163,196,122,0.15); }
+  .stat:nth-child(2) { padding-left:0; border-right:0.5px solid rgba(163,196,122,0.15); }
+  .stat:nth-child(3) { display:block; }
+  .progress-wrap { grid-column:auto; padding-bottom:1.5rem; border-top:none; }
+  .map-section { padding:1.5rem 2rem 0.5rem; }
+  .map-eyebrow::after { content: " — click to open peak profile"; }
+  #tooltip { display:block; }
+  #bottom-sheet { display:none; }
+  .log-section { padding:0 2rem 2.5rem; max-width:700px; }
+  .section-eyebrow { font-size:11px; }
+  .form-group select,
+  .form-group input[type="date"],
+  .form-group input[type="text"],
+  .form-group textarea { font-size:13px; padding:8px 11px; }
+  .submit-btn { width:auto; padding:10px 22px; font-size:13px; border-radius:7px; }
+  .recent-section { padding:0 2rem 3rem; max-width:700px; }
+  footer { flex-direction:row; justify-content:space-between; align-items:center; padding:1.5rem 2rem; }
+}
 </style>
 </head>
 <body>
@@ -145,21 +267,21 @@ footer a:hover { color:var(--moss); }
 //  YOUR DATA — update SUMMITED with your real summits
 // ══════════════════════════════════════════════════════
 const SUMMITED = [
-  { state:"FL", date:"2017-02-20", conditions:"", partners:"", notes:"" },
-  { state:"TN", date:"2020-09-04", conditions:"", partners:"", notes:"" },
-  { state:"GA", date:"2020-09-05", conditions:"", partners:"", notes:"" },
-  { state:"NC", date:"2020-09-05", conditions:"", partners:"", notes:"" },
-  { state:"SC", date:"2020-09-05", conditions:"", partners:"", notes:"" },
-  { state:"KY", date:"2020-09-06", conditions:"", partners:"", notes:"" },
-  { state:"VA", date:"2020-09-06", conditions:"", partners:"", notes:"" },
-  { state:"AZ", date:"2021-09-05", conditions:"", partners:"", notes:"" },
-  { state:"DE", date:"2022-05-20", conditions:"", partners:"", notes:"" },
-  { state:"MD", date:"2022-05-21", conditions:"", partners:"", notes:"" },
-  { state:"PA", date:"2022-05-21", conditions:"", partners:"", notes:"" },
-  { state:"WV", date:"2022-05-21", conditions:"", partners:"", notes:"" },
-  { state:"IN", date:"2022-05-22", conditions:"", partners:"", notes:"" },
-  { state:"OH", date:"2022-05-22", conditions:"", partners:"", notes:"" },
-  { state:"KS", date:"2026-05-16", conditions:"", partners:"", notes:"" },
+  { state:"FL", date:"2017-02-20", conditions:"sunny and 70", partners:"Ali", notes:"Jeepin'" },
+  { state:"TN", date:"2020-09-04", conditions:"foggy and dark", partners:"Alex", notes:"Southern Six Pack" },
+  { state:"GA", date:"2020-09-05", conditions:"sunny and 60", partners:"Alex", notes:"Southern Six Pack" },
+  { state:"NC", date:"2020-09-05", conditions:"sunny and 60", partners:"Alex", notes:"Southern Six Pack" },
+  { state:"SC", date:"2020-09-05", conditions:"sunny and 60", partners:"Alex", notes:"Southern Six Pack" },
+  { state:"KY", date:"2020-09-06", conditions:"sunny and 70", partners:"Alex", notes:"Southern Six Pack" },
+  { state:"VA", date:"2020-09-06", conditions:"sunny and 80", partners:"Alex", notes:"Southern Six Pack and wild ponies" },
+  { state:"AZ", date:"2021-09-05", conditions:"sunny and 70", partners:"Alex", notes:"R2 + Highpoint = greatest adventure ever" },
+  { state:"DE", date:"2022-05-20", conditions:"sunny and 70", partners:"Alex", notes:"Tour of I70" },
+  { state:"MD", date:"2022-05-21", conditions:"sunny and 80", partners:"Alex", notes:"Tour of I70" },
+  { state:"PA", date:"2022-05-21", conditions:"sunny and 80", partners:"Alex", notes:"Tour of I70" },
+  { state:"WV", date:"2022-05-21", conditions:"sunny and 80", partners:"Alex", notes:"Tour of I70" },
+  { state:"IN", date:"2022-05-22", conditions:"cloudy and lame", partners:"Alex", notes:"Tour of I70" },
+  { state:"OH", date:"2022-05-22", conditions:"cloudy and cold", partners:"Alex", notes:"Tour of I70" },
+  { state:"KS", date:"2026-05-16", conditions:"hot and windy", partners:"Brandon", notes:"on the way to WCE Intro Meeting (NRTC)" },
 ];
 
 const HIGHPOINTS = [
@@ -236,7 +358,7 @@ const HIGHPOINTS = [
 </div>
 
 <div class="map-section" id="map">
-  <p class="map-eyebrow">Hover any dot — click to open the peak profile</p>
+  <p class="map-eyebrow" id="map-hint">Tap any dot to see peak details</p>
   <div id="map-container"><svg id="us-map" viewBox="0 0 960 600"></svg></div>
 </div>
 
@@ -273,7 +395,43 @@ const HIGHPOINTS = [
   <span>Data via <a href="https://highpoint.guide" target="_blank">highpoint.guide</a> · Martin Classification · VanderHeide Effort Scale</span>
 </footer>
 
-<!-- TOOLTIP -->
+<!-- MOBILE BOTTOM SHEET OVERLAY -->
+<div class="bs-overlay" id="bs-overlay"></div>
+
+<!-- MOBILE BOTTOM SHEET -->
+<div id="bottom-sheet">
+  <div class="bs-card">
+    <div class="bs-handle"></div>
+    <div class="bs-header">
+      <div>
+        <div class="bs-state" id="bs-state"></div>
+        <div class="bs-peak" id="bs-peak"></div>
+      </div>
+      <div class="bs-badge" id="bs-badge"></div>
+    </div>
+    <div class="bs-date-row" id="bs-date-row">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+      <span id="bs-date"></span>
+    </div>
+    <div class="bs-grid">
+      <div class="bs-stat"><div class="bs-stat-lbl">Elevation</div><div class="bs-stat-val" id="bs-elev"></div></div>
+      <div class="bs-stat"><div class="bs-stat-lbl">Gain</div><div class="bs-stat-val" id="bs-gain"></div></div>
+      <div class="bs-stat"><div class="bs-stat-lbl">Distance</div><div class="bs-stat-val" id="bs-dist"></div></div>
+      <div class="bs-stat"><div class="bs-stat-lbl">Effort</div><div class="bs-stat-val" id="bs-effort"></div></div>
+    </div>
+    <div class="bs-diff-label">Martin difficulty (0–10)</div>
+    <div class="bs-diff-row">
+      <div class="bs-diff-track"><div class="bs-diff-fill" id="bs-diff-bar"></div></div>
+      <div class="bs-diff-num" id="bs-diff-num"></div>
+    </div>
+    <div class="bs-actions">
+      <a class="bs-btn-primary" id="bs-profile-btn" href="#">View peak profile</a>
+      <a class="bs-btn-secondary" id="bs-guide-btn" href="#" target="_blank">highpoint.guide ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- DESKTOP TOOLTIP -->
 <div id="tooltip">
   <div class="tt-card">
     <div class="tt-header">
@@ -375,7 +533,61 @@ function buildRecent() {
   });
 }
 
-// ── TOOLTIP ──
+// ── MOBILE DETECTION ──
+const isMobile = () => window.matchMedia('(max-width:767px)').matches;
+
+// ── BOTTOM SHEET ──
+const bs = document.getElementById('bottom-sheet');
+const bsOverlay = document.getElementById('bs-overlay');
+let activeDot = null;
+
+function openBS(hp) {
+  const log = sumMap[hp.state];
+  document.getElementById('bs-state').textContent = hp.name;
+  document.getElementById('bs-peak').textContent = hp.peak;
+  document.getElementById('bs-elev').textContent = hp.elev.toLocaleString() + ' ft';
+  document.getElementById('bs-gain').textContent = hp.gain > 0 ? hp.gain.toLocaleString() + ' ft' : 'Drive-up';
+  document.getElementById('bs-dist').textContent = hp.dist + ' mi RT';
+  document.getElementById('bs-effort').textContent = hp.effort + '/1000';
+  const bar = document.getElementById('bs-diff-bar');
+  bar.style.width = (hp.diff/10*100) + '%';
+  bar.style.background = diffColor(hp.diff);
+  document.getElementById('bs-diff-num').textContent = hp.diff + '/10';
+  document.getElementById('bs-profile-btn').href = 'peak.html?state=' + hp.state;
+  document.getElementById('bs-guide-btn').href = hp.guide;
+
+  const badge = document.getElementById('bs-badge');
+  const dateRow = document.getElementById('bs-date-row');
+  if (log) {
+    badge.textContent = '✓ Summited'; badge.className = 'bs-badge done';
+    const d = new Date(log.date + 'T12:00:00');
+    document.getElementById('bs-date').textContent =
+      d.toLocaleDateString('en-US',{month:'long', day:'numeric', year:'numeric'});
+    dateRow.style.display = 'flex';
+  } else {
+    badge.textContent = 'Not yet'; badge.className = 'bs-badge todo';
+    dateRow.style.display = 'none';
+  }
+
+  bs.classList.add('open');
+  bsOverlay.classList.add('visible');
+}
+
+function closeBS() {
+  bs.classList.remove('open');
+  bsOverlay.classList.remove('visible');
+  if (activeDot) { activeDot.classList.remove('active'); activeDot = null; }
+}
+
+bsOverlay.addEventListener('click', closeBS);
+
+// Swipe down to close
+let bsTouchStart = 0;
+bs.addEventListener('touchstart', e => { bsTouchStart = e.touches[0].clientY; }, {passive:true});
+bs.addEventListener('touchend', e => {
+  if (e.changedTouches[0].clientY - bsTouchStart > 60) closeBS();
+}, {passive:true});
+
 const tooltip = document.getElementById('tooltip');
 let activeHp = null;
 
@@ -496,10 +708,19 @@ async function buildMap() {
     g.append('circle').attr('class','ring').attr('cx',x).attr('cy',y).attr('r', done ? 10 : 8);
     g.append('circle').attr('class','core').attr('cx',x).attr('cy',y).attr('r', done ? 6 : 4);
 
-    g.on('mouseenter', (e) => showTT(hp, e.clientX, e.clientY))
-     .on('mousemove',  (e) => posTT(e.clientX, e.clientY))
-     .on('mouseleave', hideTT)
-     .on('click', () => window.location.href = 'peak.html?state=' + hp.state);
+    g.on('mouseenter', (e) => { if (!isMobile()) showTT(hp, e.clientX, e.clientY); })
+     .on('mousemove',  (e) => { if (!isMobile()) posTT(e.clientX, e.clientY); })
+     .on('mouseleave', () =>  { if (!isMobile()) hideTT(); })
+     .on('touchstart', (e) => {
+       e.preventDefault();
+       if (activeDot) activeDot.classList.remove('active');
+       activeDot = this || g.node();
+       g.node().classList.add('active');
+       openBS(hp);
+     })
+     .on('click', (e) => {
+       if (!isMobile()) window.location.href = 'peak.html?state=' + hp.state;
+     });
   });
 }
 
