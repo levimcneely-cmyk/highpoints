@@ -19,7 +19,7 @@
   --ink: #1c1c1a;
   --muted: #6b6b60;
   --dot-done: #7ed321;
-  --dot-todo: #3a3a2e;
+  --dot-todo: #8a8470;
   --card-bg: rgba(20,38,20,0.98);
   --card-border: #3a5c2a;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -88,8 +88,8 @@ nav a { color:var(--moss-light); text-decoration:none; font-size:13px; font-weig
 .hp-dot .core { transition:r 0.15s; }
 .hp-dot.done .core { fill:#7ed321; }
 .hp-dot.done .ring { stroke:#7ed321; }
-.hp-dot.todo .core { fill:#3a3d30; }
-.hp-dot.todo .ring { stroke:#5a6050; }
+.hp-dot.todo .core { fill:#7a7060; }
+.hp-dot.todo .ring { stroke:#9a9080; }
 .hp-dot.done .core { r:6; }
 .hp-dot.todo .core { r:4; }
 .hp-dot.active .ring { opacity:1; }
@@ -184,7 +184,7 @@ nav a { color:var(--moss-light); text-decoration:none; font-size:13px; font-weig
 .legend-item { display:flex; align-items:center; gap:6px; font-size:11px; color:rgba(245,240,232,0.5); }
 .legend-dot { width:9px; height:9px; border-radius:50%; }
 .legend-dot.done { background:#7ed321; }
-.legend-dot.todo { background:#3a3d30; border:1px solid #5a6050; }
+.legend-dot.todo { background:#7a7060; }
 
 /* ── FORM ── */
 .log-section { padding:0 1.25rem 2rem; }
@@ -519,7 +519,7 @@ function msg(t, err) {
 function buildRecent() {
   const list = document.getElementById('recent-list');
   list.innerHTML = '';
-  const all = Object.values(sumMap).sort((a,b) => b.date.localeCompare(a.date)).slice(0,8);
+  const all = Object.values(sumMap).sort((a,b) => b.date.localeCompare(a.date));
   all.forEach(s => {
     const hp = HIGHPOINTS.find(h => h.state === s.state);
     if (!hp) return;
