@@ -5,7 +5,7 @@
 
 // Paste your deployed Apps Script "Web app" URL between the quotes.
 // Leave empty to run the site in read-only mode (SUMMITED array only).
-const APPS_SCRIPT_URL = '';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsDtz1pYLAqijRLRl6FyqZHBiqkEdYcaiFeJjIvedgZMqoHiZcV953w8VRJx_2cnRW/exec';
 
 const Sync = (() => {
   const CACHE_KEY = 'hp_remote_cache_v1';
