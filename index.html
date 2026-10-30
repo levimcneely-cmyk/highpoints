@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -225,6 +224,15 @@ nav a { color:var(--moss-light); text-decoration:none; font-size:13px; font-weig
 .recent-date { font-size:12px; color:var(--moss); text-align:right; white-space:nowrap; }
 .recent-guide { font-size:11px; color:rgba(163,196,122,0.4); }
 .recent-guide a { color:inherit; text-decoration:none; }
+.recent-thumb { width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; border:0.5px solid rgba(163,196,122,0.25); }
+.recent-main { display:flex; align-items:center; gap:12px; min-width:0; }
+.form-group input[type="file"] { font-size:13px; padding:8px 10px; color:rgba(245,240,232,0.7); }
+.form-group input[type="password"] {
+  background:rgba(255,255,255,0.06); border:0.5px solid rgba(163,196,122,0.25);
+  border-radius:8px; color:var(--stone); font-family:'Inter',sans-serif;
+  font-size:16px; padding:10px 12px; outline:none; -webkit-appearance:none; appearance:none;
+}
+.submit-btn:disabled { opacity:0.6; cursor:default; }
 
 footer {
   border-top:0.5px solid rgba(163,196,122,0.1);
@@ -380,6 +388,16 @@ const HIGHPOINTS = [
       <div class="form-group"><label>Trip partners</label><input type="text" id="form-partners" placeholder="Solo, or names"></div>
     </div>
     <div class="form-group"><label>Notes</label><textarea id="form-notes" placeholder="Trail notes, memories, beta..."></textarea></div>
+    <div class="form-row" style="margin-top:10px">
+      <div class="form-group">
+        <label>Summit photo (optional)</label>
+        <input type="file" id="form-photo" accept="image/*">
+      </div>
+      <div class="form-group">
+        <label>Passcode</label>
+        <input type="password" id="form-pass" placeholder="Saved on this device" autocomplete="off">
+      </div>
+    </div>
     <button class="submit-btn" id="form-submit">Mark summited</button>
     <p id="form-msg" style="margin-top:10px;font-size:12px;display:none"></p>
   </div>
@@ -465,9 +483,18 @@ const HIGHPOINTS = [
 <!-- D3 + TopoJSON -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script src="sync.js"></script>
 <script>
+// sumMap is rebuilt from: SUMMITED (baseline in code) + rows saved in the Google Sheet
 const sumMap = {};
-SUMMITED.forEach(s => { sumMap[s.state] = s; });
+function applySummits(list) {
+  Object.keys(sumMap).forEach(k => delete sumMap[k]);
+  list.forEach(s => { sumMap[s.state] = s; });
+}
+function refreshAll() {
+  buildStats(); buildRecent(); buildFormSelect(); updateDots();
+}
+applySummits(Sync.merge(SUMMITED, Sync.cached()));
 
 // ── STATS ──
 function buildStats() {
@@ -495,18 +522,52 @@ function buildFormSelect() {
     });
 }
 
-document.getElementById('form-submit').addEventListener('click', () => {
+// Default the date to today (local time)
+(function () {
+  const d = new Date();
+  const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  document.getElementById('form-date').value = iso;
+})();
+document.getElementById('form-pass').value = Sync.getPasscode();
+
+document.getElementById('form-submit').addEventListener('click', async () => {
+  const btn   = document.getElementById('form-submit');
   const state = document.getElementById('form-state').value;
   const date  = document.getElementById('form-date').value;
   if (!state || !date) { msg('Please select a state and date.', true); return; }
-  sumMap[state] = {
+
+  const entry = {
     state, date,
-    conditions: document.getElementById('form-conditions').value,
-    partners:   document.getElementById('form-partners').value,
-    notes:      document.getElementById('form-notes').value,
+    conditions: document.getElementById('form-conditions').value.trim(),
+    partners:   document.getElementById('form-partners').value.trim(),
+    notes:      document.getElementById('form-notes').value.trim(),
   };
-  buildStats(); buildRecent(); buildFormSelect(); updateDots();
-  msg('✓ Logged! Add to the SUMMITED array in the HTML to make it permanent.', false);
+
+  const pass = document.getElementById('form-pass').value.trim();
+  if (pass) Sync.setPasscode(pass);
+
+  btn.disabled = true;
+  const origLabel = btn.textContent;
+  btn.textContent = 'Saving…';
+  try {
+    const file = document.getElementById('form-photo').files[0];
+    const payload = { action: 'log', ...entry };
+    if (file) payload.photo = await Sync.compressImage(file);
+
+    const res = await Sync.post(payload);
+    if (res.photo) entry.photo = res.photo;
+
+    // show it immediately; the sheet is now the source of truth on next load
+    sumMap[state] = { ...(sumMap[state] || {}), ...entry };
+    refreshAll();
+    ['form-conditions','form-partners','form-notes','form-photo'].forEach(id => document.getElementById(id).value = '');
+    msg('✓ Saved to your sheet.', false);
+  } catch (err) {
+    msg('Couldn’t save: ' + err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origLabel;
+  }
 });
 
 function msg(t, err) {
@@ -527,7 +588,8 @@ function buildRecent() {
     const ds = d.toLocaleDateString('en-US', {month:'short', year:'numeric'});
     const row = document.createElement('div');
     row.className = 'recent-row';
-    row.innerHTML = `<div><div class="recent-state">${hp.name}</div><div class="recent-peak">${hp.peak} · ${hp.elev.toLocaleString()} ft</div></div><div style="text-align:right"><div class="recent-date">${ds}</div><div class="recent-guide"><a href="${hp.guide}" target="_blank">highpoint.guide ↗</a></div></div>`;
+    const thumb = s.photo ? `<img class="recent-thumb" src="${s.photo}" alt="" loading="lazy">` : '';
+    row.innerHTML = `<div class="recent-main">${thumb}<div><div class="recent-state">${hp.name}</div><div class="recent-peak">${hp.peak} · ${hp.elev.toLocaleString()} ft</div></div></div><div style="text-align:right"><div class="recent-date">${ds}</div><div class="recent-guide"><a href="${hp.guide}" target="_blank">highpoint.guide ↗</a></div></div>`;
     row.addEventListener('click', () => window.location.href = 'peak.html?state=' + hp.state);
     list.appendChild(row);
   });
@@ -742,6 +804,13 @@ buildStats();
 buildFormSelect();
 buildRecent();
 buildMap();
+
+// Pull the latest from the sheet, then repaint (map dots/fills included)
+if (Sync.enabled()) {
+  Sync.fetchRemote()
+    .then(remote => { applySummits(Sync.merge(SUMMITED, remote)); refreshAll(); })
+    .catch(err => console.warn('Sheet sync failed; showing saved data.', err));
+}
 </script>
 </body>
 </html>
