@@ -29,12 +29,22 @@ const Sync = (() => {
   // earlier one field-by-field (blank fields never erase). Every photo is kept in
   // `photos` (oldest → newest); `photo` is the newest, used as the cover.
   // A state only counts as summited if it ends up with a date.
+  // Accept YYYY-MM-DD, full ISO timestamps, or M/D/YYYY and return YYYY-MM-DD ('' if unreadable)
+  function normDate(v) {
+    v = String(v == null ? '' : v).trim();
+    let m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+    m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (m) return m[3] + '-' + m[1].padStart(2, '0') + '-' + m[2].padStart(2, '0');
+    return '';
+  }
+
   function merge(base, remote) {
     const map = {};
     base.forEach(s => { map[s.state] = { ...s, photos: s.photo ? [s.photo] : [] }; });
     (remote || []).forEach(r => {
       const cur = map[r.state] || { state: r.state, photos: [] };
-      TEXT_FIELDS.forEach(f => { if (r[f]) cur[f] = r[f]; });
+      TEXT_FIELDS.forEach(f => { const v = f === 'date' ? normDate(r[f]) : r[f]; if (v) cur[f] = v; });
       if (r.photo && !cur.photos.includes(r.photo)) cur.photos.push(r.photo);
       map[r.state] = cur;
     });
@@ -113,5 +123,5 @@ const Sync = (() => {
     });
   }
 
-  return { enabled, getPasscode, setPasscode, cached, setCache, merge, fetchRemote, post, saveSummit, addPhoto, compressImage };
+  return { normDate, enabled, getPasscode, setPasscode, cached, setCache, merge, fetchRemote, post, saveSummit, addPhoto, compressImage };
 })();

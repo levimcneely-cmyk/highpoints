@@ -10,7 +10,7 @@ const U = (() => {
 
   const diffColor = d => d <= 2 ? '#a3c47a' : d <= 4 ? '#d4b96a' : d <= 6 ? '#e0895a' : d <= 8 ? '#d05540' : '#b83030';
 
-  const parseISO = iso => new Date(iso + 'T12:00:00');
+  const parseISO = iso => new Date(String(iso).slice(0, 10) + 'T12:00:00');
   const fmtDate = (iso, opts) => parseISO(iso).toLocaleDateString('en-US', opts || { month: 'long', day: 'numeric', year: 'numeric' });
   const fmtMonth = iso => fmtDate(iso, { month: 'short', year: 'numeric' });
 

@@ -1,6 +1,6 @@
 // Service worker: lets the site open offline and install to the home screen.
 // Network-first, so you always get the newest files when you're online.
-const CACHE = 'summit-log-v1';
+const CACHE = 'summit-log-v2';
 const SHELL = ['./', 'index.html', 'peak.html', 'data.js', 'util.js', 'sync.js',
   'vendor/d3.min.js', 'vendor/topojson-client.min.js', 'vendor/states-10m.json',
   'manifest.webmanifest', 'favicon.svg', 'icon-192.png'];
