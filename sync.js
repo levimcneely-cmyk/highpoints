@@ -10,7 +10,7 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsDtz1pYLAqijR
 const Sync = (() => {
   const CACHE_KEY = 'hp_remote_cache_v1';
   const PASS_KEY  = 'hp_passcode';
-  const FIELDS    = ['date', 'conditions', 'partners', 'notes', 'photo'];
+  const TEXT_FIELDS = ['date', 'conditions', 'partners', 'notes'];
 
   const enabled = () => !!APPS_SCRIPT_URL;
 
@@ -23,23 +23,36 @@ const Sync = (() => {
   function cached() {
     try { return JSON.parse(lsGet(CACHE_KEY) || '[]'); } catch (e) { return []; }
   }
+  const setCache = list => lsSet(CACHE_KEY, JSON.stringify(list));
 
-  // Baseline (SUMMITED in the HTML) + remote rows, later rows win field-by-field.
+  // Baseline (SUMMITED in data.js) + sheet rows, in order. A later row overrides an
+  // earlier one field-by-field (blank fields never erase). Every photo is kept in
+  // `photos` (oldest → newest); `photo` is the newest, used as the cover.
   // A state only counts as summited if it ends up with a date.
   function merge(base, remote) {
     const map = {};
-    base.forEach(s => { map[s.state] = { ...s }; });
+    base.forEach(s => { map[s.state] = { ...s, photos: s.photo ? [s.photo] : [] }; });
     (remote || []).forEach(r => {
-      const cur = map[r.state] || { state: r.state };
-      FIELDS.forEach(f => { if (r[f]) cur[f] = r[f]; });
+      const cur = map[r.state] || { state: r.state, photos: [] };
+      TEXT_FIELDS.forEach(f => { if (r[f]) cur[f] = r[f]; });
+      if (r.photo && !cur.photos.includes(r.photo)) cur.photos.push(r.photo);
       map[r.state] = cur;
     });
-    return Object.values(map).filter(s => s.date);
+    return Object.values(map)
+      .map(s => ({ ...s, photo: s.photos[s.photos.length - 1] || '' }))
+      .filter(s => s.date);
+  }
+
+  async function timedFetch(url, opts, ms) {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), ms);
+    try { return await fetch(url, { ...opts, signal: ctl.signal }); }
+    finally { clearTimeout(t); }
   }
 
   async function fetchRemote() {
     if (!enabled()) return [];
-    const res = await fetch(APPS_SCRIPT_URL, { cache: 'no-store' });
+    const res = await timedFetch(APPS_SCRIPT_URL, { cache: 'no-store' }, 20000);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Load failed');
     lsSet(CACHE_KEY, JSON.stringify(data.summits));
@@ -49,13 +62,36 @@ const Sync = (() => {
   // text/plain keeps this a "simple" request so the browser skips the CORS preflight
   async function post(payload) {
     if (!enabled()) throw new Error('Saving isn’t connected yet (APPS_SCRIPT_URL is empty).');
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ ...payload, passcode: getPasscode() })
-    });
+    let res;
+    try {
+      res = await timedFetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ ...payload, passcode: getPasscode() })
+      }, 60000);
+    } catch (e) {
+      throw new Error(navigator.onLine === false ? 'You’re offline.' : 'The request timed out or was blocked.');
+    }
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Save failed');
     return data;
+  }
+
+  // Save (or update) a summit. Editing = saving again for the same state: the new row
+  // overrides the old fields. `photoFile` is optional and is added to the state's photos.
+  async function saveSummit(entry, photoFile) {
+    const payload = { action: 'log', state: entry.state, date: entry.date,
+      conditions: entry.conditions || '', partners: entry.partners || '', notes: entry.notes || '' };
+    if (photoFile) payload.photo = await compressImage(photoFile);
+    const res = await post(payload);
+    return { ...entry, photo: res.photo || '' };
+  }
+
+  // Add one more photo to a summit. Sent as a new row carrying the summit's date so
+  // photos accumulate instead of replacing each other.
+  async function addPhoto(state, date, photoFile) {
+    const dataUrl = await compressImage(photoFile);
+    const res = await post({ action: 'log', state, date, photo: dataUrl });
+    return res.photo || '';
   }
 
   // Resize + recompress so iPhone photos (often 4–8 MB) upload in a second or two.
@@ -77,5 +113,5 @@ const Sync = (() => {
     });
   }
 
-  return { enabled, getPasscode, setPasscode, cached, merge, fetchRemote, post, compressImage };
+  return { enabled, getPasscode, setPasscode, cached, setCache, merge, fetchRemote, post, saveSummit, addPhoto, compressImage };
 })();

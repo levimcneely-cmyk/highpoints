@@ -3,362 +3,278 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Summit Log — US Highpoints</title>
+<meta name="description" content="Tracking the climb to the highest point in every U.S. state.">
+<meta name="theme-color" content="#1a2e1a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Summit Log">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Summit Log — US Highpoints">
+<meta property="og:description" content="Tracking the climb to the highest point in every U.S. state.">
+<meta property="og:image" content="https://levimcneely-cmyk.github.io/highpoints/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --forest: #1a2e1a;
-  --forest-mid: #2d4a2a;
   --moss: #a3c47a;
   --moss-light: #c8dfa8;
   --stone: #f5f0e8;
-  --ink: #1c1c1a;
-  --muted: #6b6b60;
-  --dot-done: #7ed321;
-  --dot-todo: #8a8470;
-  --card-bg: rgba(20,38,20,0.98);
-  --card-border: #3a5c2a;
+  --lime: #7ed321;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }
-html { -webkit-text-size-adjust: 100%; }
-body { font-family:'Inter',sans-serif; background:var(--forest); color:var(--stone); min-height:100vh; overflow-x:hidden; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 70px; }
+body { font-family:'Inter',sans-serif; background:var(--forest); color:var(--stone); min-height:100vh; overflow-x:hidden; -webkit-tap-highlight-color:transparent; }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible { outline:2px solid var(--moss); outline-offset:2px; }
 
 /* ── NAV ── */
 nav {
   display:flex; align-items:center; justify-content:space-between;
-  padding:1rem 1.25rem;
-  padding-top: calc(1rem + var(--safe-top));
+  padding:1rem 1.25rem; padding-top:calc(1rem + var(--safe-top));
   border-bottom:0.5px solid rgba(163,196,122,0.2);
   position:sticky; top:0; z-index:100; background:var(--forest);
 }
-.nav-logo { font-family:'Playfair Display',serif; font-size:20px; color:var(--stone); }
+.nav-logo { font-family:'Playfair Display',serif; font-size:20px; color:var(--stone); text-decoration:none; }
 .nav-logo span { color:var(--moss); }
 .nav-links { display:flex; gap:1.25rem; align-items:center; }
-nav a { color:var(--moss-light); text-decoration:none; font-size:13px; font-weight:500; letter-spacing:0.04em; opacity:0.8; }
+nav a { color:var(--moss-light); text-decoration:none; font-size:13px; font-weight:500; letter-spacing:0.04em; opacity:0.85; }
 .nav-links .nav-guide { display:none; }
 
 /* ── HERO STATS ── */
-.hero-stats {
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:0;
-  padding:1.25rem 1.25rem 0;
-  border-bottom:0.5px solid rgba(163,196,122,0.15);
-}
-.stat {
-  padding:0 0 1.25rem 0;
-  border-right:0.5px solid rgba(163,196,122,0.15);
-  padding-right: 1rem;
-  margin-right: 0;
-}
-.stat:nth-child(2) { padding-left:1rem; border-right:none; }
-.stat:nth-child(3) { display:none; } /* hide "highest" on mobile — shown in progress row */
-.stat-num { font-family:'Playfair Display',serif; font-size:32px; color:var(--moss); line-height:1; }
+.hero-stats { display:grid; grid-template-columns:repeat(3,1fr); padding:1.25rem 1.25rem 0; border-bottom:0.5px solid rgba(163,196,122,0.15); }
+.stat { padding:0 0.75rem 1.1rem 0; border-right:0.5px solid rgba(163,196,122,0.15); }
+.stat + .stat { padding-left:0.9rem; }
+.stat:nth-child(3) { border-right:none; }
+.stat-num { font-family:'Playfair Display',serif; font-size:26px; color:var(--moss); line-height:1.05; }
 .stat-label { font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(245,240,232,0.5); margin-top:3px; }
-.progress-wrap {
-  grid-column: 1 / -1;
-  display:flex; flex-direction:column; justify-content:flex-end;
-  padding: 0.75rem 0 1.25rem;
-  border-top:0.5px solid rgba(163,196,122,0.1);
-}
+.progress-wrap { grid-column:1 / -1; padding:0.75rem 0 1.25rem; border-top:0.5px solid rgba(163,196,122,0.1); }
 .progress-track { height:5px; background:rgba(163,196,122,0.15); border-radius:3px; overflow:hidden; margin-bottom:6px; }
 .progress-fill { height:100%; background:var(--moss); border-radius:3px; transition:width 0.6s ease; }
-.progress-label { font-size:11px; color:rgba(245,240,232,0.4); text-align:right; }
+.progress-label { font-size:11px; color:rgba(245,240,232,0.45); text-align:right; }
+
+/* ── SECTIONS ── */
+.sec { padding:0 1.25rem 2.25rem; max-width:980px; margin:0 auto; }
+.eyebrow { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(163,196,122,0.65); margin-bottom:0.75rem; }
+.map-section { padding:1.25rem 0 0; max-width:980px; margin:0 auto; }
+.map-section .eyebrow { padding:0 1.25rem; }
+
+/* ── CHIPS ── */
+.chips { display:flex; gap:8px; overflow-x:auto; padding:0 1.25rem 0.75rem; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+.chips::-webkit-scrollbar { display:none; }
+.chip {
+  flex:none; border:0.5px solid rgba(163,196,122,0.3); background:rgba(255,255,255,0.04);
+  color:var(--moss-light); border-radius:999px; padding:0 14px; min-height:40px;
+  font-size:13px; font-family:inherit; cursor:pointer;
+}
+.chip small { opacity:0.7; margin-left:5px; font-size:11px; }
+.chip[aria-pressed="true"] { background:var(--moss); color:var(--forest); border-color:var(--moss); }
+.sec .chips { padding-left:0; padding-right:0; }
 
 /* ── MAP ── */
-.map-section { padding:1rem 1.25rem 0.25rem; }
-.map-eyebrow { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(163,196,122,0.6); margin-bottom:0.75rem; }
-#map-container { position:relative; width:100%; background:rgba(255,255,255,0.02); border-radius:10px; border:0.5px solid rgba(163,196,122,0.12); overflow:hidden; }
-#map-container svg { display:block; width:100%; height:auto; touch-action:none; }
-
-/* D3 map */
-.state-fill { stroke:#131f11; stroke-width:0.8; }
+#map-container { position:relative; width:calc(100% - 2.5rem); margin:0 auto; background:rgba(255,255,255,0.02); border-radius:10px; border:0.5px solid rgba(163,196,122,0.12); overflow:hidden; }
+#map-container svg { display:block; width:100%; height:auto; }
+.state-fill { stroke:#131f11; stroke-width:0.8px; vector-effect:non-scaling-stroke; transition:opacity .3s; }
 .state-todo { fill:#1e3019; }
 .state-done { fill:#2d5c1a; }
-.state-border { fill:none; stroke:rgba(163,196,122,0.3); stroke-width:0.5; }
-.nation-border { fill:none; stroke:rgba(163,196,122,0.6); stroke-width:1.2; }
+.state-out { opacity:0.4; }
+.state-border { fill:none; stroke:rgba(163,196,122,0.3); stroke-width:0.6px; vector-effect:non-scaling-stroke; }
+.nation-border { fill:none; stroke:rgba(163,196,122,0.6); stroke-width:1.2px; vector-effect:non-scaling-stroke; }
+.hp-dot { cursor:pointer; outline:none; transition:opacity .3s; }
+.hp-dot .hit { fill:transparent; }
+.hp-dot .core { vector-effect:non-scaling-stroke; }
+.hp-dot.done .core { fill:var(--lime); stroke:var(--stone); stroke-width:1.5px; }
+.hp-dot.todo .core { fill:#1a2e1a; stroke:#b9ae92; stroke-width:1.7px; }
+.hp-dot .ring { fill:none; stroke:var(--stone); stroke-width:1.5px; vector-effect:non-scaling-stroke; opacity:0; transition:opacity .15s; }
+.hp-dot.active .ring, .hp-dot:hover .ring, .hp-dot:focus-visible .ring { opacity:1; }
+.hp-dot.out { opacity:0.15; pointer-events:none; }
 
-.hp-dot { cursor:pointer; }
-.hp-dot .ring { fill:none; stroke-width:1.5; opacity:0; transition:opacity 0.2s; }
-.hp-dot .core { transition:r 0.15s; }
-.hp-dot.done .core { fill:#7ed321; }
-.hp-dot.done .ring { stroke:#7ed321; }
-.hp-dot.todo .core { fill:#7a7060; }
-.hp-dot.todo .ring { stroke:#9a9080; }
-.hp-dot.done .core { r:6; }
-.hp-dot.todo .core { r:4; }
-.hp-dot.active .ring { opacity:1; }
-.hp-dot.active.done .core { r:8; }
-.hp-dot.active.todo .core { r:6; }
+.legend { display:flex; gap:1.25rem; padding:0.6rem 1.25rem 1.25rem; align-items:center; max-width:980px; margin:0 auto; }
+.legend-item { display:flex; align-items:center; gap:7px; font-size:12px; color:rgba(245,240,232,0.6); }
+.legend-dot { width:11px; height:11px; border-radius:50%; box-sizing:border-box; }
+.legend-dot.done { background:var(--lime); border:1.5px solid var(--stone); }
+.legend-dot.todo { background:#1a2e1a; border:1.7px solid #b9ae92; }
 
-/* ── DESKTOP TOOLTIP (hidden on mobile) ── */
-#tooltip {
-  position:fixed; pointer-events:none; z-index:200; opacity:0; transition:opacity 0.15s; max-width:290px;
-}
+/* ── DESKTOP TOOLTIP ── */
+#tooltip { position:fixed; pointer-events:none; z-index:200; opacity:0; transition:opacity 0.15s; max-width:290px; display:none; }
 #tooltip.visible { opacity:1; }
-.tt-card {
-  background:var(--card-bg); border:0.5px solid var(--card-border);
-  border-radius:10px; padding:1rem 1.1rem;
-  box-shadow:0 12px 40px rgba(0,0,0,0.6);
-}
+.tt-card { background:rgba(20,38,20,0.98); border:0.5px solid #3a5c2a; border-radius:10px; padding:1rem 1.1rem; box-shadow:0 12px 40px rgba(0,0,0,0.6); }
 .tt-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:0.5rem; }
-.tt-state { font-family:'Playfair Display',serif; font-size:17px; color:var(--stone); line-height:1.2; }
+.tt-state { font-family:'Playfair Display',serif; font-size:17px; line-height:1.2; }
 .tt-peak { font-size:12px; color:var(--moss-light); margin-bottom:0.7rem; }
 .tt-badge { font-size:10px; padding:2px 8px; border-radius:20px; font-weight:500; white-space:nowrap; margin-top:3px; }
 .tt-badge.done { background:rgba(106,181,71,0.2); color:#a3e07a; }
-.tt-badge.todo { background:rgba(106,138,96,0.2); color:#8ab878; }
+.tt-badge.todo { background:rgba(185,174,146,0.15); color:#c9bfa4; }
 .tt-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin-bottom:0.7rem; }
 .tt-lbl { font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(245,240,232,0.4); margin-bottom:1px; }
-.tt-val { font-size:13px; font-weight:500; color:var(--stone); }
-.diff-wrap { margin-bottom:0.7rem; }
+.tt-val { font-size:13px; font-weight:500; }
 .diff-track { height:4px; background:rgba(163,196,122,0.12); border-radius:2px; overflow:hidden; margin-top:4px; }
 .diff-fill { height:100%; border-radius:2px; }
-.tt-date-row { border-top:0.5px solid rgba(163,196,122,0.15); padding-top:0.5rem; font-size:12px; color:var(--moss); display:none; align-items:center; gap:6px; }
-.tt-link-row { margin-top:0.5rem; display:flex; gap:10px; }
-.tt-link { font-size:11px; color:rgba(163,196,122,0.5); text-decoration:none; }
+.tt-date-row { border-top:0.5px solid rgba(163,196,122,0.15); padding-top:0.5rem; margin-top:0.6rem; font-size:12px; color:var(--moss); display:none; }
+.tt-hint { margin-top:0.5rem; font-size:11px; color:rgba(163,196,122,0.5); }
 
 /* ── MOBILE BOTTOM SHEET ── */
-#bottom-sheet {
-  position:fixed; bottom:0; left:0; right:0; z-index:300;
-  transform:translateY(100%);
-  transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);
-  padding-bottom: var(--safe-bottom);
-}
-#bottom-sheet.open { transform:translateY(0); }
-
-.bs-card {
-  background:#1f3a1f;
-  border-top:0.5px solid rgba(163,196,122,0.3);
-  border-radius:18px 18px 0 0;
-  padding:0 1.25rem 1.25rem;
-  box-shadow:0 -8px 40px rgba(0,0,0,0.5);
-}
-.bs-handle {
-  width:36px; height:4px; background:rgba(163,196,122,0.3);
-  border-radius:2px; margin:10px auto 1rem;
-}
-.bs-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:0.75rem; }
-.bs-state { font-family:'Playfair Display',serif; font-size:22px; color:var(--stone); line-height:1.2; }
+#bottom-sheet { position:fixed; bottom:0; left:0; right:0; z-index:300; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.32,0.72,0,1); padding-bottom:var(--safe-bottom); visibility:hidden; }
+#bottom-sheet.open { transform:translateY(0); visibility:visible; }
+.bs-card { background:#1f3a1f; border-top:0.5px solid rgba(163,196,122,0.3); border-radius:18px 18px 0 0; padding:0 1.25rem 1.25rem; box-shadow:0 -8px 40px rgba(0,0,0,0.5); }
+.bs-handle { width:36px; height:4px; background:rgba(163,196,122,0.3); border-radius:2px; margin:10px auto 1rem; }
+.bs-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:0.75rem; gap:10px; }
+.bs-state { font-family:'Playfair Display',serif; font-size:22px; line-height:1.2; }
 .bs-peak { font-size:13px; color:var(--moss-light); margin-top:2px; }
 .bs-badge { font-size:11px; padding:3px 10px; border-radius:20px; font-weight:500; flex-shrink:0; margin-top:4px; }
 .bs-badge.done { background:rgba(106,181,71,0.2); color:#a3e07a; border:0.5px solid rgba(106,181,71,0.3); }
-.bs-badge.todo { background:rgba(106,138,96,0.15); color:#8ab878; border:0.5px solid rgba(106,138,96,0.2); }
+.bs-badge.todo { background:rgba(185,174,146,0.15); color:#c9bfa4; border:0.5px solid rgba(185,174,146,0.25); }
 .bs-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:1rem; }
 .bs-stat { background:rgba(255,255,255,0.04); border-radius:8px; padding:9px 11px; }
 .bs-stat-lbl { font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(245,240,232,0.4); margin-bottom:3px; }
-.bs-stat-val { font-size:15px; font-weight:500; color:var(--stone); }
+.bs-stat-val { font-size:15px; font-weight:500; }
 .bs-diff-label { font-size:9px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(245,240,232,0.4); margin-bottom:6px; }
 .bs-diff-row { display:flex; align-items:center; gap:8px; margin-bottom:1rem; }
 .bs-diff-track { flex:1; height:5px; background:rgba(163,196,122,0.1); border-radius:3px; overflow:hidden; }
 .bs-diff-fill { height:100%; border-radius:3px; }
-.bs-diff-num { font-size:13px; font-weight:500; color:var(--stone); min-width:32px; text-align:right; }
-.bs-date-row { display:none; align-items:center; gap:6px; font-size:12px; color:var(--moss); margin-bottom:1rem; padding:0.6rem 0; border-top:0.5px solid rgba(163,196,122,0.15); border-bottom:0.5px solid rgba(163,196,122,0.15); }
+.bs-diff-num { font-size:13px; font-weight:500; min-width:32px; text-align:right; }
+.bs-date-row { display:none; font-size:12px; color:var(--moss); margin-bottom:1rem; padding:0.6rem 0; border-top:0.5px solid rgba(163,196,122,0.15); border-bottom:0.5px solid rgba(163,196,122,0.15); }
 .bs-actions { display:flex; gap:10px; }
-.bs-btn-primary {
-  flex:1; background:var(--moss); color:var(--forest);
-  border:none; border-radius:10px; padding:13px;
-  font-size:14px; font-weight:500; font-family:'Inter',sans-serif;
-  cursor:pointer; text-align:center; text-decoration:none; display:block;
-}
-.bs-btn-secondary {
-  flex:1; background:rgba(255,255,255,0.06); color:var(--moss-light);
-  border:0.5px solid rgba(163,196,122,0.25); border-radius:10px; padding:13px;
-  font-size:14px; font-weight:500; font-family:'Inter',sans-serif;
-  cursor:pointer; text-align:center; text-decoration:none; display:block;
-}
-.bs-overlay {
-  position:fixed; inset:0; z-index:299;
-  background:rgba(0,0,0,0.4);
-  opacity:0; pointer-events:none;
-  transition:opacity 0.3s;
-}
+.bs-btn-primary, .bs-btn-secondary { flex:1; border-radius:10px; padding:13px; font-size:14px; font-weight:500; font-family:inherit; text-align:center; text-decoration:none; display:block; }
+.bs-btn-primary { background:var(--moss); color:var(--forest); }
+.bs-btn-secondary { background:rgba(255,255,255,0.06); color:var(--moss-light); border:0.5px solid rgba(163,196,122,0.25); }
+.bs-overlay { position:fixed; inset:0; z-index:299; background:rgba(0,0,0,0.4); opacity:0; pointer-events:none; transition:opacity 0.3s; }
 .bs-overlay.visible { opacity:1; pointer-events:all; }
 
-/* ── LEGEND ── */
-.legend { display:flex; gap:1.25rem; padding:0.6rem 1.25rem 0.75rem; align-items:center; }
-.legend-item { display:flex; align-items:center; gap:6px; font-size:11px; color:rgba(245,240,232,0.5); }
-.legend-dot { width:9px; height:9px; border-radius:50%; }
-.legend-dot.done { background:#7ed321; }
-.legend-dot.todo { background:#7a7060; }
+/* ── NUMBERS ── */
+.tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:1.25rem; }
+.tile { background:rgba(255,255,255,0.04); border:0.5px solid rgba(163,196,122,0.15); border-radius:10px; padding:12px; }
+.tile-num { font-family:'Playfair Display',serif; font-size:22px; color:var(--moss); line-height:1.1; }
+.tile-lbl { font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(245,240,232,0.5); margin-top:4px; }
+.year-row { display:grid; grid-template-columns:40px 1fr 24px; gap:10px; align-items:center; font-size:12px; color:rgba(245,240,232,0.6); margin-bottom:6px; }
+.year-bar-track { height:8px; background:rgba(163,196,122,0.08); border-radius:4px; overflow:hidden; }
+.year-bar { height:100%; background:var(--moss); border-radius:4px; }
+.year-n { text-align:right; color:var(--stone); }
+.fineprint { font-size:11px; color:rgba(245,240,232,0.35); margin-top:8px; line-height:1.5; }
+
+/* ── TRIPS + NEXT UP ── */
+.cards { display:grid; grid-template-columns:1fr; gap:10px; }
+.card { background:rgba(255,255,255,0.04); border:0.5px solid rgba(163,196,122,0.18); border-radius:12px; padding:1rem 1.1rem; }
+.card-title { font-size:15px; font-weight:500; margin-bottom:2px; }
+.card-sub { font-size:12px; color:rgba(245,240,232,0.5); margin-bottom:10px; }
+.mini-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.mini { text-decoration:none; font-size:12px; font-weight:500; padding:6px 10px; border-radius:999px; min-height:32px; display:inline-flex; align-items:center; }
+.mini.done { background:rgba(126,211,33,0.14); color:#b8ee7e; border:0.5px solid rgba(126,211,33,0.35); }
+.mini.todo { background:transparent; color:#c9bfa4; border:0.5px solid rgba(185,174,146,0.4); }
+.next-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 0; border-top:0.5px solid rgba(163,196,122,0.1); text-decoration:none; color:inherit; min-height:48px; }
+.next-row:first-of-type { border-top:none; }
+.next-peak { font-size:14px; font-weight:500; }
+.next-sub { font-size:11px; color:rgba(245,240,232,0.5); margin-top:2px; }
+.next-effort { font-size:12px; color:var(--moss); white-space:nowrap; }
+
+/* ── PEAK LIST ── */
+.list-controls { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:0.75rem; flex-wrap:wrap; }
+.sort-select { background:rgba(255,255,255,0.06); border:0.5px solid rgba(163,196,122,0.25); border-radius:8px; color:var(--stone); font-family:inherit; font-size:16px; padding:8px 10px; min-height:40px; -webkit-appearance:none; appearance:none; }
+.sort-select option { background:var(--forest); color:var(--stone); }
+.list-count { font-size:12px; color:rgba(245,240,232,0.5); margin-bottom:0.5rem; }
+.peak-list { border-top:0.5px solid rgba(163,196,122,0.15); }
+.peak-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:0.5px solid rgba(163,196,122,0.1); text-decoration:none; color:inherit; min-height:58px; }
+.pr-dot { width:12px; height:12px; border-radius:50%; flex:none; box-sizing:border-box; }
+.pr-dot.done { background:var(--lime); border:1.5px solid var(--stone); }
+.pr-dot.todo { background:transparent; border:1.7px solid #b9ae92; }
+.pr-main { flex:1; min-width:0; }
+.pr-peak { display:block; font-size:14px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pr-sub { display:block; font-size:12px; color:rgba(245,240,232,0.5); margin-top:2px; }
+.pr-meta { display:flex; align-items:center; gap:10px; flex:none; }
+.pr-elev { font-size:12px; color:rgba(245,240,232,0.7); }
+.pr-diff { font-size:11px; font-weight:500; padding:3px 8px; border-radius:999px; border:0.5px solid currentColor; }
+
+/* ── PHOTO WALL ── */
+.wall { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.wall-item { position:relative; display:block; aspect-ratio:1; border-radius:10px; overflow:hidden; background:rgba(255,255,255,0.05); }
+.wall-item img { width:100%; height:100%; object-fit:cover; display:block; }
+.wall-cap { position:absolute; left:0; right:0; bottom:0; padding:18px 10px 8px; font-size:12px; font-weight:500; background:linear-gradient(transparent, rgba(0,0,0,0.65)); }
 
 /* ── FORM ── */
-.log-section { padding:0 1.25rem 2rem; }
-.section-eyebrow { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(163,196,122,0.6); margin-bottom:0.75rem; }
 .log-card { background:rgba(255,255,255,0.04); border:0.5px solid rgba(163,196,122,0.2); border-radius:12px; padding:1.25rem; }
-.log-card-title { font-size:15px; font-weight:500; color:var(--stone); margin-bottom:1rem; }
+.log-card-title { font-size:15px; font-weight:500; margin-bottom:1rem; }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
-.form-group { display:flex; flex-direction:column; gap:5px; }
-.form-group label { font-size:10px; letter-spacing:0.07em; text-transform:uppercase; color:rgba(245,240,232,0.45); }
-.form-group select,
-.form-group input[type="date"],
-.form-group input[type="text"],
-.form-group textarea {
-  background:rgba(255,255,255,0.06); border:0.5px solid rgba(163,196,122,0.25);
-  border-radius:8px; color:var(--stone); font-family:'Inter',sans-serif;
-  font-size:16px; /* 16px prevents iOS auto-zoom */
-  padding:10px 12px; outline:none; -webkit-appearance:none; appearance:none;
+.form-group { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.form-group label { font-size:10px; letter-spacing:0.07em; text-transform:uppercase; color:rgba(245,240,232,0.5); }
+.form-group select, .form-group input[type="date"], .form-group input[type="text"], .form-group input[type="password"], .form-group textarea {
+  background:rgba(255,255,255,0.06); border:0.5px solid rgba(163,196,122,0.25); border-radius:8px; color:var(--stone);
+  font-family:inherit; font-size:16px; padding:10px 12px; outline:none; -webkit-appearance:none; appearance:none; min-width:0; width:100%;
 }
-.form-group select:focus,.form-group input:focus,.form-group textarea:focus { border-color:var(--moss); }
+.form-group select:focus, .form-group input:focus, .form-group textarea:focus { border-color:var(--moss); }
 .form-group select option { background:var(--forest); color:var(--stone); }
 .form-group textarea { resize:none; height:70px; }
-.submit-btn {
-  margin-top:12px; width:100%; background:var(--moss); color:var(--forest);
-  border:none; border-radius:10px; padding:13px;
-  font-size:15px; font-weight:500; font-family:'Inter',sans-serif; cursor:pointer;
-}
+.form-group input[type="file"] { font-size:13px; padding:8px 0; color:rgba(245,240,232,0.7); width:100%; }
+.submit-btn { margin-top:12px; width:100%; background:var(--moss); color:var(--forest); border:none; border-radius:10px; padding:13px; font-size:15px; font-weight:500; font-family:inherit; cursor:pointer; }
+.submit-btn:disabled { opacity:0.6; cursor:default; }
+#form-msg { margin-top:10px; font-size:12px; display:none; }
 
 /* ── RECENT ── */
-.recent-section { padding:0 1.25rem 2rem; }
 .recent-list { border-top:0.5px solid rgba(163,196,122,0.15); }
-.recent-row {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px 0; border-bottom:0.5px solid rgba(163,196,122,0.1);
-  gap:12px; cursor:pointer; min-height:56px; /* touch target */
-}
-.recent-state { font-size:14px; font-weight:500; color:var(--stone); }
+.recent-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:0.5px solid rgba(163,196,122,0.1); gap:12px; text-decoration:none; color:inherit; min-height:60px; }
+.recent-main { display:flex; align-items:center; gap:12px; min-width:0; }
+.recent-thumb { width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; border:0.5px solid rgba(163,196,122,0.25); }
+.recent-state { font-size:14px; font-weight:500; }
 .recent-peak { font-size:12px; color:rgba(245,240,232,0.5); margin-top:2px; }
 .recent-date { font-size:12px; color:var(--moss); text-align:right; white-space:nowrap; }
-.recent-guide { font-size:11px; color:rgba(163,196,122,0.4); }
-.recent-guide a { color:inherit; text-decoration:none; }
-.recent-thumb { width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; border:0.5px solid rgba(163,196,122,0.25); }
-.recent-main { display:flex; align-items:center; gap:12px; min-width:0; }
-.form-group input[type="file"] { font-size:13px; padding:8px 10px; color:rgba(245,240,232,0.7); }
-.form-group input[type="password"] {
-  background:rgba(255,255,255,0.06); border:0.5px solid rgba(163,196,122,0.25);
-  border-radius:8px; color:var(--stone); font-family:'Inter',sans-serif;
-  font-size:16px; padding:10px 12px; outline:none; -webkit-appearance:none; appearance:none;
-}
-.submit-btn:disabled { opacity:0.6; cursor:default; }
+.recent-guide { font-size:11px; color:rgba(163,196,122,0.45); text-align:right; }
 
-footer {
-  border-top:0.5px solid rgba(163,196,122,0.1);
-  padding:1.25rem;
-  padding-bottom: calc(1.25rem + var(--safe-bottom));
-  font-size:11px; color:rgba(245,240,232,0.3);
-  display:flex; flex-direction:column; gap:6px;
-}
-footer a { color:rgba(163,196,122,0.5); text-decoration:none; }
+footer { border-top:0.5px solid rgba(163,196,122,0.1); padding:1.25rem; padding-bottom:calc(1.25rem + var(--safe-bottom)); font-size:11px; color:rgba(245,240,232,0.35); display:flex; flex-direction:column; gap:6px; }
+footer a { color:rgba(163,196,122,0.6); text-decoration:none; }
 
-/* ── DESKTOP overrides ── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior:auto; }
+  *, *::before, *::after { transition:none !important; }
+}
+
 @media (min-width: 768px) {
   nav { padding:1.1rem 2rem; }
+  .nav-links { gap:1.75rem; }
   .nav-links .nav-guide { display:block; }
-  .hero-stats { display:flex; padding:1.5rem 2rem 0; }
-  .stat { padding:0 2rem 1.5rem 0; margin-right:2rem; border-right:0.5px solid rgba(163,196,122,0.15); }
-  .stat:nth-child(2) { padding-left:0; border-right:0.5px solid rgba(163,196,122,0.15); }
-  .stat:nth-child(3) { display:block; }
-  .progress-wrap { grid-column:auto; padding-bottom:1.5rem; border-top:none; }
-  .map-section { padding:1.5rem 2rem 0.5rem; }
-  .map-eyebrow::after { content: " — click to open peak profile"; }
+  .hero-stats { padding:1.5rem 2rem 0; max-width:980px; margin:0 auto; }
+  .stat-num { font-size:34px; }
+  .map-section .eyebrow, .chips { padding-left:2rem; padding-right:2rem; }
+  #map-container { width:calc(100% - 4rem); }
+  .legend { padding-left:2rem; padding-right:2rem; }
+  .sec { padding-left:2rem; padding-right:2rem; }
+  .sec .chips { padding-left:0; padding-right:0; }
+  .tiles { grid-template-columns:repeat(3,1fr); }
+  .cards { grid-template-columns:1fr 1fr; }
+  .wall { grid-template-columns:repeat(4,1fr); }
   #tooltip { display:block; }
-  #bottom-sheet { display:none; }
-  .log-section { padding:0 2rem 2.5rem; max-width:700px; }
-  .section-eyebrow { font-size:11px; }
-  .form-group select,
-  .form-group input[type="date"],
-  .form-group input[type="text"],
-  .form-group textarea { font-size:13px; padding:8px 11px; }
+  #bottom-sheet, .bs-overlay { display:none; }
+  .form-group select, .form-group input[type="date"], .form-group input[type="text"], .form-group input[type="password"], .form-group textarea { font-size:13px; padding:8px 11px; }
+  .sort-select { font-size:13px; }
+  .log-section-wrap { max-width:700px; }
   .submit-btn { width:auto; padding:10px 22px; font-size:13px; border-radius:7px; }
-  .recent-section { padding:0 2rem 3rem; max-width:700px; }
   footer { flex-direction:row; justify-content:space-between; align-items:center; padding:1.5rem 2rem; }
 }
 </style>
 </head>
 <body>
 
-<script>
-// ══════════════════════════════════════════════════════
-//  YOUR DATA — update SUMMITED with your real summits
-// ══════════════════════════════════════════════════════
-const SUMMITED = [
-  { state:"FL", date:"2017-02-20", conditions:"sunny and 70", partners:"Ali", notes:"Jeepin'" },
-  { state:"TN", date:"2020-09-04", conditions:"foggy and dark", partners:"Alex", notes:"Southern Six Pack" },
-  { state:"GA", date:"2020-09-05", conditions:"sunny and 60", partners:"Alex", notes:"Southern Six Pack" },
-  { state:"NC", date:"2020-09-05", conditions:"sunny and 60", partners:"Alex", notes:"Southern Six Pack" },
-  { state:"SC", date:"2020-09-05", conditions:"sunny and 60", partners:"Alex", notes:"Southern Six Pack" },
-  { state:"KY", date:"2020-09-06", conditions:"sunny and 70", partners:"Alex", notes:"Southern Six Pack" },
-  { state:"VA", date:"2020-09-06", conditions:"sunny and 80", partners:"Alex", notes:"Southern Six Pack and wild ponies" },
-  { state:"AZ", date:"2021-09-05", conditions:"sunny and 70", partners:"Alex", notes:"R2 + Highpoint = greatest adventure ever" },
-  { state:"DE", date:"2022-05-20", conditions:"sunny and 70", partners:"Alex", notes:"Tour of I70" },
-  { state:"MD", date:"2022-05-21", conditions:"sunny and 80", partners:"Alex", notes:"Tour of I70" },
-  { state:"PA", date:"2022-05-21", conditions:"sunny and 80", partners:"Alex", notes:"Tour of I70" },
-  { state:"WV", date:"2022-05-21", conditions:"sunny and 80", partners:"Alex", notes:"Tour of I70" },
-  { state:"IN", date:"2022-05-22", conditions:"cloudy and lame", partners:"Alex", notes:"Tour of I70" },
-  { state:"OH", date:"2022-05-22", conditions:"cloudy and cold", partners:"Alex", notes:"Tour of I70" },
-  { state:"KS", date:"2026-05-16", conditions:"hot and windy", partners:"Brandon", notes:"on the way to WCE Intro Meeting (NRTC)" },
-];
-
-const HIGHPOINTS = [
-  {state:"AK",name:"Alaska",        peak:"Denali",                 elev:20320,gain:24500,dist:56,  diff:10,effort:1000,lat:63.069,lng:-151.007,guide:"https://highpoint.guide/ak/"},
-  {state:"WY",name:"Wyoming",       peak:"Gannett Peak",           elev:13804,gain:8650, dist:40.4,diff:9, effort:506, lat:43.184,lng:-109.654,guide:"https://highpoint.guide/wy/"},
-  {state:"WA",name:"Washington",    peak:"Mount Rainier",          elev:14411,gain:9100, dist:16,  diff:9, effort:366, lat:46.853,lng:-121.731,guide:"https://highpoint.guide/wa/"},
-  {state:"MT",name:"Montana",       peak:"Granite Peak",           elev:12799,gain:7700, dist:22.2,diff:9, effort:368, lat:45.163,lng:-109.808,guide:"https://highpoint.guide/mt/"},
-  {state:"CA",name:"California",    peak:"Mount Whitney",          elev:14494,gain:6750, dist:21.4,diff:7, effort:263, lat:36.578,lng:-118.292,guide:"https://highpoint.guide/ca/"},
-  {state:"UT",name:"Utah",          peak:"Kings Peak",             elev:13528,gain:5350, dist:28.8,diff:7, effort:291, lat:40.776,lng:-110.373,guide:"https://highpoint.guide/ut/"},
-  {state:"CO",name:"Colorado",      peak:"Mount Elbert",           elev:14440,gain:5000, dist:9,   diff:6, effort:147, lat:39.118,lng:-106.445,guide:"https://highpoint.guide/co/"},
-  {state:"OR",name:"Oregon",        peak:"Mount Hood",             elev:11239,gain:5300, dist:8,   diff:8, effort:222, lat:45.374,lng:-121.696,guide:"https://highpoint.guide/or/"},
-  {state:"ID",name:"Idaho",         peak:"Borah Peak",             elev:12662,gain:5550, dist:6.8, diff:8, effort:181, lat:44.137,lng:-113.781,guide:"https://highpoint.guide/id/"},
-  {state:"NV",name:"Nevada",        peak:"Boundary Peak",          elev:13140,gain:4400, dist:7.4, diff:6, effort:126, lat:37.846,lng:-118.351,guide:"https://highpoint.guide/nv/"},
-  {state:"AZ",name:"Arizona",       peak:"Humphreys Peak",         elev:12633,gain:3500, dist:9,   diff:6, effort:120, lat:35.347,lng:-111.678,guide:"https://highpoint.guide/az/"},
-  {state:"NY",name:"New York",      peak:"Mount Marcy",            elev:5344, gain:3200, dist:14.8,diff:5, effort:151, lat:44.113,lng:-73.924, guide:"https://highpoint.guide/ny/"},
-  {state:"ME",name:"Maine",         peak:"Katahdin",               elev:5268, gain:4200, dist:10.4,diff:5, effort:141, lat:45.904,lng:-68.921, guide:"https://highpoint.guide/me/"},
-  {state:"NM",name:"New Mexico",    peak:"Wheeler Peak",           elev:13161,gain:3250, dist:6.2, diff:6, effort:98,  lat:36.557,lng:-105.417,guide:"https://highpoint.guide/nm/"},
-  {state:"TX",name:"Texas",         peak:"Guadalupe Peak",         elev:8749, gain:2950, dist:8.4, diff:5, effort:106, lat:31.891,lng:-104.860,guide:"https://highpoint.guide/tx/"},
-  {state:"VA",name:"Virginia",      peak:"Mount Rogers",           elev:5729, gain:1500, dist:8.6, diff:4, effort:81,  lat:36.660,lng:-81.544, guide:"https://highpoint.guide/va/"},
-  {state:"OK",name:"Oklahoma",      peak:"Black Mesa",             elev:4975, gain:775,  dist:8.6, diff:4, effort:68,  lat:36.931,lng:-102.998,guide:"https://highpoint.guide/ok/"},
-  {state:"SD",name:"South Dakota",  peak:"Black Elk Peak",         elev:7242, gain:1500, dist:5.8, diff:4, effort:64,  lat:43.866,lng:-103.532,guide:"https://highpoint.guide/sd/"},
-  {state:"MN",name:"Minnesota",     peak:"Eagle Mountain",         elev:2301, gain:600,  dist:7,   diff:4, effort:55,  lat:47.899,lng:-90.561, guide:"https://highpoint.guide/mn/"},
-  {state:"VT",name:"Vermont",       peak:"Mount Mansfield",        elev:4393, gain:1053, dist:2.8, diff:3, effort:28,  lat:44.544,lng:-72.814, guide:"https://highpoint.guide/vt/"},
-  {state:"CT",name:"Connecticut",   peak:"Mount Frissell",         elev:2380, gain:862,  dist:2.3, diff:3, effort:31,  lat:42.050,lng:-73.484, guide:"https://highpoint.guide/ct/"},
-  {state:"ND",name:"North Dakota",  peak:"White Butte",            elev:3506, gain:400,  dist:3.4, diff:2, effort:29,  lat:46.387,lng:-103.302,guide:"https://highpoint.guide/nd/"},
-  {state:"HI",name:"Hawaii",        peak:"Mauna Kea",              elev:13796,gain:230,  dist:0.4, diff:2, effort:7,   lat:19.821,lng:-155.468,guide:"https://highpoint.guide/hi/"},
-  {state:"MD",name:"Maryland",      peak:"Hoye Crest",             elev:3360, gain:750,  dist:2.2, diff:3, effort:27,  lat:39.236,lng:-79.487, guide:"https://highpoint.guide/md/"},
-  {state:"TN",name:"Tennessee",     peak:"Kuwohi",                 elev:6643, gain:330,  dist:1,   diff:2, effort:12,  lat:35.563,lng:-83.498, guide:"https://highpoint.guide/tn/"},
-  {state:"GA",name:"Georgia",       peak:"Brasstown Bald",         elev:4784, gain:400,  dist:1,   diff:2, effort:1,   lat:34.874,lng:-83.811, guide:"https://highpoint.guide/ga/"},
-  {state:"IL",name:"Illinois",      peak:"Charles Mound",          elev:1235, gain:275,  dist:2.5, diff:2, effort:21,  lat:42.508,lng:-90.240, guide:"https://highpoint.guide/il/"},
-  {state:"NC",name:"North Carolina",peak:"Mount Mitchell",         elev:6684, gain:100,  dist:0.2, diff:1, effort:3,   lat:35.765,lng:-82.265, guide:"https://highpoint.guide/nc/"},
-  {state:"AR",name:"Arkansas",      peak:"Magazine Mountain",      elev:2753, gain:225,  dist:1,   diff:2, effort:10,  lat:35.164,lng:-93.644, guide:"https://highpoint.guide/ar/"},
-  {state:"LA",name:"Louisiana",     peak:"Driskill Mountain",      elev:535,  gain:150,  dist:1.8, diff:2, effort:14,  lat:32.424,lng:-92.899, guide:"https://highpoint.guide/la/"},
-  {state:"WV",name:"West Virginia", peak:"Spruce Knob",            elev:4863, gain:20,   dist:0.3, diff:1, effort:2,   lat:38.700,lng:-79.532, guide:"https://highpoint.guide/wv/"},
-  {state:"WI",name:"Wisconsin",     peak:"Timms Hill",             elev:1951, gain:120,  dist:0.4, diff:1, effort:5,   lat:45.451,lng:-90.195, guide:"https://highpoint.guide/wi/"},
-  {state:"SC",name:"South Carolina",peak:"Sassafras Mountain",     elev:3533, gain:50,   dist:0.15,diff:1, effort:2,   lat:35.065,lng:-82.777, guide:"https://highpoint.guide/sc/"},
-  {state:"MO",name:"Missouri",      peak:"Taum Sauk Mountain",     elev:1772, gain:30,   dist:0.4, diff:1, effort:3,   lat:37.571,lng:-90.727, guide:"https://highpoint.guide/mo/"},
-  {state:"NH",name:"New Hampshire", peak:"Mount Washington",       elev:6288, gain:20,   dist:0.1, diff:1, effort:0,   lat:44.271,lng:-71.303, guide:"https://highpoint.guide/nh/"},
-  {state:"KY",name:"Kentucky",      peak:"Black Mountain",         elev:4145, gain:30,   dist:0.1, diff:1, effort:1,   lat:36.908,lng:-82.894, guide:"https://highpoint.guide/ky/"},
-  {state:"NJ",name:"New Jersey",    peak:"High Point",             elev:1803, gain:40,   dist:0.2, diff:1, effort:2,   lat:41.321,lng:-74.664, guide:"https://highpoint.guide/nj/"},
-  {state:"NE",name:"Nebraska",      peak:"Panorama Point",         elev:5424, gain:0,    dist:0.1, diff:1, effort:0,   lat:41.003,lng:-104.030,guide:"https://highpoint.guide/ne/"},
-  {state:"MA",name:"Massachusetts", peak:"Mount Greylock",         elev:3491, gain:20,   dist:0.1, diff:1, effort:1,   lat:42.637,lng:-73.166, guide:"https://highpoint.guide/ma/"},
-  {state:"KS",name:"Kansas",        peak:"Mount Sunflower",        elev:4039, gain:0,    dist:0.1, diff:1, effort:0,   lat:39.022,lng:-102.038,guide:"https://highpoint.guide/ks/"},
-  {state:"MI",name:"Michigan",      peak:"Mount Arvon",            elev:1979, gain:10,   dist:0.1, diff:1, effort:0,   lat:46.757,lng:-88.155, guide:"https://highpoint.guide/mi/"},
-  {state:"RI",name:"Rhode Island",  peak:"Jerimoth Hill",          elev:812,  gain:0,    dist:0.2, diff:1, effort:1,   lat:41.851,lng:-71.778, guide:"https://highpoint.guide/ri/"},
-  {state:"PA",name:"Pennsylvania",  peak:"Mount Davis",            elev:3213, gain:0,    dist:0.1, diff:1, effort:0,   lat:39.786,lng:-79.176, guide:"https://highpoint.guide/pa/"},
-  {state:"AL",name:"Alabama",       peak:"Cheaha Mountain",        elev:2407, gain:0,    dist:0.1, diff:1, effort:0,   lat:33.486,lng:-85.809, guide:"https://highpoint.guide/al/"},
-  {state:"IA",name:"Iowa",          peak:"Hawkeye Point",          elev:1670, gain:0,    dist:0.1, diff:1, effort:0,   lat:43.460,lng:-95.709, guide:"https://highpoint.guide/ia/"},
-  {state:"OH",name:"Ohio",          peak:"Campbell Hill",          elev:1550, gain:0,    dist:0.1, diff:1, effort:0,   lat:40.366,lng:-83.717, guide:"https://highpoint.guide/oh/"},
-  {state:"IN",name:"Indiana",       peak:"Hoosier Hill",           elev:1257, gain:0,    dist:0.1, diff:1, effort:0,   lat:40.000,lng:-84.845, guide:"https://highpoint.guide/in/"},
-  {state:"MS",name:"Mississippi",   peak:"Woodall Mountain",       elev:806,  gain:0,    dist:0.1, diff:1, effort:0,   lat:34.788,lng:-88.241, guide:"https://highpoint.guide/ms/"},
-  {state:"DE",name:"Delaware",      peak:"Ebright Azimuth",        elev:448,  gain:0,    dist:0.1, diff:1, effort:0,   lat:39.836,lng:-75.519, guide:"https://highpoint.guide/de/"},
-  {state:"FL",name:"Florida",       peak:"Britton Hill",           elev:345,  gain:0,    dist:0.1, diff:1, effort:0,   lat:30.888,lng:-86.282, guide:"https://highpoint.guide/fl/"},
-];
-</script>
-
 <nav>
-  <div class="nav-logo">Summit<span>Log</span></div>
+  <a class="nav-logo" href="index.html">Summit<span>Log</span></a>
   <div class="nav-links">
     <a href="#map">Map</a>
-    <a href="#log">Log summit</a>
-    <a href="https://highpoint.guide" target="_blank">Highpoint Guide ↗</a>
+    <a href="#peaks">Peaks</a>
+    <a href="#log">Log</a>
+    <a class="nav-guide" href="https://highpoint.guide" target="_blank" rel="noopener">Highpoint Guide ↗</a>
   </div>
 </nav>
 
 <div class="hero-stats">
   <div class="stat"><div class="stat-num" id="stat-done">0</div><div class="stat-label">Summited</div></div>
   <div class="stat"><div class="stat-num" id="stat-remain">50</div><div class="stat-label">Remaining</div></div>
-  <div class="stat"><div class="stat-num" id="stat-highest">—</div><div class="stat-label">Highest summited</div></div>
+  <div class="stat"><div class="stat-num" id="stat-highest">—</div><div class="stat-label">Highest</div></div>
   <div class="progress-wrap">
     <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
     <div class="progress-label" id="progress-label">0 of 50</div>
@@ -366,71 +282,96 @@ const HIGHPOINTS = [
 </div>
 
 <div class="map-section" id="map">
-  <p class="map-eyebrow" id="map-hint">Tap any dot to see peak details</p>
-  <div id="map-container"><svg id="us-map" viewBox="0 0 960 600"></svg></div>
+  <p class="eyebrow" id="map-hint">Tap a dot for details</p>
+  <div class="chips" id="region-chips" role="group" aria-label="Zoom to a region"></div>
+  <div id="map-container"><svg id="us-map" viewBox="0 0 960 600" role="group" aria-label="Map of the 50 state highpoints"></svg></div>
 </div>
-
 <div class="legend">
-  <div class="legend-item"><div class="legend-dot done"></div>Summited</div>
-  <div class="legend-item"><div class="legend-dot todo"></div>Not yet</div>
+  <div class="legend-item"><span class="legend-dot done"></span>Summited</div>
+  <div class="legend-item"><span class="legend-dot todo"></span>Not yet</div>
 </div>
 
-<div class="log-section" id="log">
-  <p class="section-eyebrow">Log a summit</p>
-  <div class="log-card">
-    <div class="log-card-title">Mark a new highpoint</div>
-    <div class="form-row">
-      <div class="form-group"><label>State</label><select id="form-state"></select></div>
-      <div class="form-group"><label>Date summited</label><input type="date" id="form-date"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>Conditions</label><input type="text" id="form-conditions" placeholder="e.g. clear skies, light wind"></div>
-      <div class="form-group"><label>Trip partners</label><input type="text" id="form-partners" placeholder="Solo, or names"></div>
-    </div>
-    <div class="form-group"><label>Notes</label><textarea id="form-notes" placeholder="Trail notes, memories, beta..."></textarea></div>
-    <div class="form-row" style="margin-top:10px">
-      <div class="form-group">
-        <label>Summit photo (optional)</label>
-        <input type="file" id="form-photo" accept="image/*">
-      </div>
-      <div class="form-group">
-        <label>Passcode</label>
-        <input type="password" id="form-pass" placeholder="Saved on this device" autocomplete="off">
-      </div>
-    </div>
-    <button class="submit-btn" id="form-submit">Mark summited</button>
-    <p id="form-msg" style="margin-top:10px;font-size:12px;display:none"></p>
+<section class="sec" id="numbers">
+  <p class="eyebrow">By the numbers</p>
+  <div class="tiles" id="tiles"></div>
+  <div id="years"></div>
+  <p class="fineprint">Gain and mileage use the most popular route figures from highpoint.guide, summed over the peaks you've summited.</p>
+</section>
+
+<section class="sec" id="trips-sec" hidden>
+  <p class="eyebrow">Trips</p>
+  <div class="cards" id="trips"></div>
+</section>
+
+<section class="sec" id="next-sec">
+  <p class="eyebrow">Next up</p>
+  <div class="cards" id="next"></div>
+</section>
+
+<section class="sec" id="peaks">
+  <p class="eyebrow">All 50 peaks</p>
+  <div class="chips" id="status-chips" role="group" aria-label="Filter by status"></div>
+  <div class="list-controls">
+    <div class="list-count" id="list-count" aria-live="polite"></div>
+    <label class="sr-only" for="sort">Sort peaks</label>
+    <select class="sort-select" id="sort">
+      <option value="elev">Highest first</option>
+      <option value="diff">Hardest first</option>
+      <option value="easy">Easiest first</option>
+      <option value="name">State A–Z</option>
+    </select>
   </div>
-</div>
+  <div class="peak-list" id="peak-list"></div>
+</section>
 
-<div class="recent-section">
-  <p class="section-eyebrow">Recent summits</p>
+<section class="sec" id="wall-sec" hidden>
+  <p class="eyebrow">Photos</p>
+  <div class="wall" id="wall"></div>
+</section>
+
+<section class="sec" id="log">
+  <div class="log-section-wrap">
+    <p class="eyebrow">Log a summit</p>
+    <div class="log-card">
+      <div class="log-card-title">Mark a new highpoint</div>
+      <div class="form-row">
+        <div class="form-group"><label for="form-state">State</label><select id="form-state"></select></div>
+        <div class="form-group"><label for="form-date">Date summited</label><input type="date" id="form-date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label for="form-conditions">Conditions</label><input type="text" id="form-conditions" placeholder="e.g. clear skies, light wind"></div>
+        <div class="form-group"><label for="form-partners">Trip partners</label><input type="text" id="form-partners" placeholder="Solo, or names"></div>
+      </div>
+      <div class="form-group"><label for="form-notes">Notes</label><textarea id="form-notes" placeholder="Trail notes, memories, beta..."></textarea></div>
+      <div class="form-row" style="margin-top:10px">
+        <div class="form-group"><label for="form-photo">Summit photo (optional)</label><input type="file" id="form-photo" accept="image/*"></div>
+        <div class="form-group"><label for="form-pass">Passcode</label><input type="password" id="form-pass" placeholder="Saved on this device" autocomplete="off"></div>
+      </div>
+      <button class="submit-btn" id="form-submit" type="button">Mark summited</button>
+      <p id="form-msg" role="status"></p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="recent">
+  <p class="eyebrow">Summit history</p>
   <div class="recent-list" id="recent-list"></div>
-</div>
+</section>
 
 <footer>
-  <span>Built for the summit obsessed</span>
-  <span>Data via <a href="https://highpoint.guide" target="_blank">highpoint.guide</a> · Martin Classification · VanderHeide Effort Scale</span>
+  <span>Built for the summit obsessed · <span id="sync-status">Showing saved data</span></span>
+  <span>Data via <a href="https://highpoint.guide" target="_blank" rel="noopener">highpoint.guide</a> · Martin Classification · VanderHeide Effort Scale</span>
 </footer>
 
-<!-- MOBILE BOTTOM SHEET OVERLAY -->
 <div class="bs-overlay" id="bs-overlay"></div>
-
-<!-- MOBILE BOTTOM SHEET -->
-<div id="bottom-sheet">
+<div id="bottom-sheet" role="dialog" aria-modal="true" aria-label="Peak details">
   <div class="bs-card">
     <div class="bs-handle"></div>
     <div class="bs-header">
-      <div>
-        <div class="bs-state" id="bs-state"></div>
-        <div class="bs-peak" id="bs-peak"></div>
-      </div>
+      <div><div class="bs-state" id="bs-state"></div><div class="bs-peak" id="bs-peak"></div></div>
       <div class="bs-badge" id="bs-badge"></div>
     </div>
-    <div class="bs-date-row" id="bs-date-row">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-      <span id="bs-date"></span>
-    </div>
+    <div class="bs-date-row" id="bs-date-row"></div>
     <div class="bs-grid">
       <div class="bs-stat"><div class="bs-stat-lbl">Elevation</div><div class="bs-stat-val" id="bs-elev"></div></div>
       <div class="bs-stat"><div class="bs-stat-lbl">Gain</div><div class="bs-stat-val" id="bs-gain"></div></div>
@@ -438,19 +379,15 @@ const HIGHPOINTS = [
       <div class="bs-stat"><div class="bs-stat-lbl">Effort</div><div class="bs-stat-val" id="bs-effort"></div></div>
     </div>
     <div class="bs-diff-label">Martin difficulty (0–10)</div>
-    <div class="bs-diff-row">
-      <div class="bs-diff-track"><div class="bs-diff-fill" id="bs-diff-bar"></div></div>
-      <div class="bs-diff-num" id="bs-diff-num"></div>
-    </div>
+    <div class="bs-diff-row"><div class="bs-diff-track"><div class="bs-diff-fill" id="bs-diff-bar"></div></div><div class="bs-diff-num" id="bs-diff-num"></div></div>
     <div class="bs-actions">
-      <a class="bs-btn-primary" id="bs-profile-btn" href="#">View peak profile</a>
-      <a class="bs-btn-secondary" id="bs-guide-btn" href="#" target="_blank">highpoint.guide ↗</a>
+      <a class="bs-btn-primary" id="bs-profile-btn" href="#">Peak profile</a>
+      <a class="bs-btn-secondary" id="bs-guide-btn" href="#" target="_blank" rel="noopener">highpoint.guide ↗</a>
     </div>
   </div>
 </div>
 
-<!-- DESKTOP TOOLTIP -->
-<div id="tooltip">
+<div id="tooltip" aria-hidden="true">
   <div class="tt-card">
     <div class="tt-header">
       <div><div class="tt-state" id="tt-state"></div><div class="tt-peak" id="tt-peak"></div></div>
@@ -462,354 +399,394 @@ const HIGHPOINTS = [
       <div><div class="tt-lbl">Distance</div><div class="tt-val" id="tt-dist"></div></div>
       <div><div class="tt-lbl">Effort score</div><div class="tt-val" id="tt-effort"></div></div>
     </div>
-    <div class="diff-wrap">
-      <div class="tt-lbl">Martin difficulty (0–10)</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div class="diff-track" style="flex:1"><div class="diff-fill" id="tt-diff-bar"></div></div>
-        <div class="tt-val" id="tt-diff-num" style="min-width:28px;text-align:right"></div>
-      </div>
+    <div class="tt-lbl">Martin difficulty (0–10)</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="diff-track" style="flex:1"><div class="diff-fill" id="tt-diff-bar"></div></div>
+      <div class="tt-val" id="tt-diff-num" style="min-width:28px;text-align:right"></div>
     </div>
-    <div class="tt-date-row" id="tt-date-row">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-      <span id="tt-date"></span>
-    </div>
-    <div class="tt-link-row">
-      <a class="tt-link" id="tt-profile-link" href="#">View peak profile →</a>
-      <a class="tt-link" id="tt-guide-link" href="#" target="_blank">highpoint.guide ↗</a>
-    </div>
+    <div class="tt-date-row" id="tt-date-row"></div>
+    <div class="tt-hint">Click for the full peak profile →</div>
   </div>
 </div>
 
-<!-- D3 + TopoJSON -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="data.js"></script>
+<script src="util.js"></script>
 <script src="sync.js"></script>
 <script>
-// sumMap is rebuilt from: SUMMITED (baseline in code) + rows saved in the Google Sheet
-const sumMap = {};
-function applySummits(list) {
-  Object.keys(sumMap).forEach(k => delete sumMap[k]);
-  list.forEach(s => { sumMap[s.state] = s; });
-}
-function refreshAll() {
-  buildStats(); buildRecent(); buildFormSelect(); updateDots();
-}
-applySummits(Sync.merge(SUMMITED, Sync.cached()));
+const $ = id => document.getElementById(id);
+const isMobile = () => window.matchMedia('(max-width:767px)').matches;
+const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// ── STATS ──
+// ── DATA STATE: SUMMITED (data.js) + rows from the Google Sheet ──
+let remote = Sync.cached();
+const sumMap = {};
+function applySummits() {
+  Object.keys(sumMap).forEach(k => delete sumMap[k]);
+  Sync.merge(SUMMITED, remote).forEach(s => { sumMap[s.state] = s; });
+}
+applySummits();
+
+const view = { region: 'All', status: 'all', sort: 'elev' };
+const inRegion = h => view.region === 'All' || REGIONS[view.region].includes(h.state);
+
+// ── HERO STATS ──
 function buildStats() {
   const done = HIGHPOINTS.filter(h => sumMap[h.state]);
   const n = done.length;
-  document.getElementById('stat-done').textContent = n;
-  document.getElementById('stat-remain').textContent = 50 - n;
-  const highest = [...done].sort((a,b) => b.elev - a.elev)[0];
-  document.getElementById('stat-highest').textContent = highest ? highest.elev.toLocaleString() + ' ft' : '—';
-  document.getElementById('progress-fill').style.width = (n/50*100).toFixed(1) + '%';
-  document.getElementById('progress-label').textContent = n + ' of 50 · ' + Math.round(n/50*100) + '%';
+  $('stat-done').textContent = n;
+  $('stat-remain').textContent = 50 - n;
+  const highest = [...done].sort((a, b) => b.elev - a.elev)[0];
+  $('stat-highest').textContent = highest ? highest.elev.toLocaleString() + ' ft' : '—';
+  $('progress-fill').style.width = (n / 50 * 100).toFixed(1) + '%';
+  $('progress-label').textContent = n + ' of 50 · ' + Math.round(n / 50 * 100) + '%';
 }
 
-// ── FORM ──
-function buildFormSelect() {
-  const sel = document.getElementById('form-state');
-  sel.innerHTML = '';
-  HIGHPOINTS.filter(h => !sumMap[h.state])
-    .sort((a,b) => a.name.localeCompare(b.name))
-    .forEach(h => {
-      const o = document.createElement('option');
-      o.value = h.state;
-      o.textContent = h.name + ' — ' + h.peak;
-      sel.appendChild(o);
-    });
-}
+// ── BY THE NUMBERS ──
+function buildNumbers() {
+  const done = HIGHPOINTS.filter(h => sumMap[h.state]);
+  const gain = done.reduce((a, h) => a + h.gain, 0);
+  const miles = done.reduce((a, h) => a + h.dist, 0);
+  const years = {};
+  done.forEach(h => { const y = sumMap[h.state].date.slice(0, 4); years[y] = (years[y] || 0) + 1; });
+  const ys = Object.keys(years).map(Number);
+  const first = ys.length ? Math.min(...ys) : null, last = ys.length ? Math.max(...ys) : null;
 
-// Default the date to today (local time)
-(function () {
-  const d = new Date();
-  const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  document.getElementById('form-date').value = iso;
-})();
-document.getElementById('form-pass').value = Sync.getPasscode();
+  $('tiles').innerHTML = [
+    [gain.toLocaleString() + ' ft', 'Climbed'],
+    [(Math.round(miles * 10) / 10).toLocaleString() + ' mi', 'Hiked'],
+    [first ? (first === last ? String(first) : first + '–' + String(last).slice(2)) : '—', 'Active'],
+  ].map(t => `<div class="tile"><div class="tile-num">${U.esc(t[0])}</div><div class="tile-lbl">${t[1]}</div></div>`).join('');
 
-document.getElementById('form-submit').addEventListener('click', async () => {
-  const btn   = document.getElementById('form-submit');
-  const state = document.getElementById('form-state').value;
-  const date  = document.getElementById('form-date').value;
-  if (!state || !date) { msg('Please select a state and date.', true); return; }
-
-  const entry = {
-    state, date,
-    conditions: document.getElementById('form-conditions').value.trim(),
-    partners:   document.getElementById('form-partners').value.trim(),
-    notes:      document.getElementById('form-notes').value.trim(),
-  };
-
-  const pass = document.getElementById('form-pass').value.trim();
-  if (pass) Sync.setPasscode(pass);
-
-  btn.disabled = true;
-  const origLabel = btn.textContent;
-  btn.textContent = 'Saving…';
-  try {
-    const file = document.getElementById('form-photo').files[0];
-    const payload = { action: 'log', ...entry };
-    if (file) payload.photo = await Sync.compressImage(file);
-
-    const res = await Sync.post(payload);
-    if (res.photo) entry.photo = res.photo;
-
-    // show it immediately; the sheet is now the source of truth on next load
-    sumMap[state] = { ...(sumMap[state] || {}), ...entry };
-    refreshAll();
-    ['form-conditions','form-partners','form-notes','form-photo'].forEach(id => document.getElementById(id).value = '');
-    msg('✓ Saved to your sheet.', false);
-  } catch (err) {
-    msg('Couldn’t save: ' + err.message, true);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = origLabel;
+  if (!ys.length) { $('years').innerHTML = ''; return; }
+  const max = Math.max(...Object.values(years));
+  let rows = '';
+  for (let y = first; y <= last; y++) {
+    const c = years[y] || 0;
+    rows += `<div class="year-row"><span>${y}</span><span class="year-bar-track"><span class="year-bar" style="display:block;width:${(c / max * 100).toFixed(0)}%"></span></span><span class="year-n">${c}</span></div>`;
   }
-});
+  $('years').innerHTML = `<div role="img" aria-label="Summits per year">${rows}</div>`;
+}
+
+// ── TRIPS ──
+function buildTrips() {
+  const cards = TRIPS.map(t => {
+    const doneSt = t.states.filter(s => sumMap[s]);
+    if (!doneSt.length) return '';
+    const dates = doneSt.map(s => sumMap[s].date).sort();
+    const range = dates[0] === dates[dates.length - 1] ? U.fmtDate(dates[0]) : U.fmtDate(dates[0], { month: 'short', day: 'numeric' }) + ' – ' + U.fmtDate(dates[dates.length - 1]);
+    const chips = t.states.map(s => `<a class="mini ${sumMap[s] ? 'done' : 'todo'}" href="peak.html?state=${s}">${s} · ${U.esc(U.byState[s].peak)}</a>`).join('');
+    return `<div class="card"><div class="card-title">${U.esc(t.name)}</div><div class="card-sub">${range} · ${doneSt.length} of ${t.states.length} states</div><div class="mini-chips">${chips}</div></div>`;
+  }).join('');
+  $('trips').innerHTML = cards;
+  $('trips-sec').hidden = !cards;
+}
+
+// ── NEXT UP ──
+function buildNext() {
+  const left = HIGHPOINTS.filter(h => !sumMap[h.state]);
+  const easy = [...left].sort((a, b) => a.effort - b.effort || b.elev - a.elev).slice(0, 5);
+  const big = [...left].sort((a, b) => b.effort - a.effort).slice(0, 4);
+  const rows = arr => arr.map(h => `<a class="next-row" href="peak.html?state=${h.state}"><span><div class="next-peak">${U.esc(h.peak)}</div><div class="next-sub">${U.esc(h.name)} · ${h.elev.toLocaleString()} ft · Martin ${h.diff}/10</div></span><span class="next-effort">effort ${h.effort}</span></a>`).join('');
+  $('next').innerHTML = left.length
+    ? `<div class="card"><div class="card-title">Easiest remaining</div><div class="card-sub">Quick wins by effort score</div>${rows(easy)}</div>
+       <div class="card"><div class="card-title">Biggest remaining</div><div class="card-sub">The ones to plan around</div>${rows(big)}</div>`
+    : `<div class="card"><div class="card-title">All 50 done.</div></div>`;
+}
+
+// ── PEAK LIST ──
+function buildChips() {
+  const regions = ['All', ...Object.keys(REGIONS)];
+  $('region-chips').innerHTML = regions.map(r => {
+    const list = r === 'All' ? HIGHPOINTS : HIGHPOINTS.filter(h => REGIONS[r].includes(h.state));
+    const d = list.filter(h => sumMap[h.state]).length;
+    return `<button class="chip" type="button" data-region="${r}" aria-pressed="${view.region === r}">${r}<small>${d}/${list.length}</small></button>`;
+  }).join('');
+  const sts = [['all', 'All'], ['done', 'Summited'], ['todo', 'Not yet']];
+  $('status-chips').innerHTML = sts.map(s => `<button class="chip" type="button" data-status="${s[0]}" aria-pressed="${view.status === s[0]}">${s[1]}</button>`).join('');
+}
+
+function buildList() {
+  let arr = HIGHPOINTS.filter(h => inRegion(h) && (view.status === 'all' || (view.status === 'done') === !!sumMap[h.state]));
+  const sorters = {
+    elev: (a, b) => b.elev - a.elev,
+    diff: (a, b) => b.effort - a.effort,
+    easy: (a, b) => a.effort - b.effort || b.elev - a.elev,
+    name: (a, b) => a.name.localeCompare(b.name),
+  };
+  arr.sort(sorters[view.sort]);
+  $('list-count').textContent = arr.length + (arr.length === 1 ? ' peak' : ' peaks') + (view.region !== 'All' ? ' · ' + view.region : '');
+  $('peak-list').innerHTML = arr.map(h => {
+    const s = sumMap[h.state], c = U.diffColor(h.diff);
+    return `<a class="peak-row" href="peak.html?state=${h.state}">
+      <span class="pr-dot ${s ? 'done' : 'todo'}" aria-hidden="true"></span>
+      <span class="pr-main"><span class="pr-peak">${U.esc(h.peak)}</span><span class="pr-sub">${U.esc(h.name)}${s ? ' · summited ' + U.fmtMonth(s.date) : ''}</span></span>
+      <span class="pr-meta"><span class="pr-elev">${h.elev.toLocaleString()} ft</span><span class="pr-diff" style="color:${c}">${h.diff}/10</span></span>
+    </a>`;
+  }).join('');
+}
+
+// ── PHOTO WALL ──
+function buildWall() {
+  const items = [];
+  Object.values(sumMap).sort((a, b) => b.date.localeCompare(a.date)).forEach(s => {
+    (s.photos || []).slice().reverse().forEach(p => { const u = U.safeUrl(p); if (u) items.push({ s, u }); });
+  });
+  $('wall').innerHTML = items.map(it => {
+    const h = U.byState[it.s.state];
+    return `<a class="wall-item" href="peak.html?state=${it.s.state}"><img src="${U.esc(it.u)}" alt="Summit photo at ${U.esc(h.peak)}" loading="lazy"><span class="wall-cap">${U.esc(h.peak)}</span></a>`;
+  }).join('');
+  $('wall-sec').hidden = !items.length;
+}
+
+// ── SUMMIT HISTORY ──
+function buildRecent() {
+  $('recent-list').innerHTML = Object.values(sumMap).sort((a, b) => b.date.localeCompare(a.date)).map(s => {
+    const hp = U.byState[s.state]; if (!hp) return '';
+    const u = U.safeUrl(s.photo);
+    const thumb = u ? `<img class="recent-thumb" src="${U.esc(u)}" alt="" loading="lazy">` : '';
+    return `<a class="recent-row" href="peak.html?state=${s.state}"><div class="recent-main">${thumb}<div><div class="recent-state">${U.esc(hp.name)}</div><div class="recent-peak">${U.esc(hp.peak)} · ${hp.elev.toLocaleString()} ft</div></div></div><div><div class="recent-date">${U.fmtMonth(s.date)}</div><div class="recent-guide">details →</div></div></a>`;
+  }).join('');
+}
+
+// ── LOG FORM ──
+function buildFormSelect() {
+  const sel = $('form-state'); const prev = sel.value;
+  sel.innerHTML = HIGHPOINTS.filter(h => !sumMap[h.state]).sort((a, b) => a.name.localeCompare(b.name))
+    .map(h => `<option value="${h.state}">${U.esc(h.name)} — ${U.esc(h.peak)}</option>`).join('');
+  if (prev) sel.value = prev;
+}
+$('form-date').value = U.todayISO();
+$('form-pass').value = Sync.getPasscode();
 
 function msg(t, err) {
-  const m = document.getElementById('form-msg');
+  const m = $('form-msg');
   m.textContent = t; m.style.color = err ? '#f09595' : 'var(--moss)'; m.style.display = 'block';
-  setTimeout(() => m.style.display = 'none', 6000);
+  clearTimeout(msg.t); msg.t = setTimeout(() => { m.style.display = 'none'; }, 7000);
 }
 
-// ── RECENT ──
-function buildRecent() {
-  const list = document.getElementById('recent-list');
-  list.innerHTML = '';
-  const all = Object.values(sumMap).sort((a,b) => b.date.localeCompare(a.date));
-  all.forEach(s => {
-    const hp = HIGHPOINTS.find(h => h.state === s.state);
-    if (!hp) return;
-    const d = new Date(s.date + 'T12:00:00');
-    const ds = d.toLocaleDateString('en-US', {month:'short', year:'numeric'});
-    const row = document.createElement('div');
-    row.className = 'recent-row';
-    const thumb = s.photo ? `<img class="recent-thumb" src="${s.photo}" alt="" loading="lazy">` : '';
-    row.innerHTML = `<div class="recent-main">${thumb}<div><div class="recent-state">${hp.name}</div><div class="recent-peak">${hp.peak} · ${hp.elev.toLocaleString()} ft</div></div></div><div style="text-align:right"><div class="recent-date">${ds}</div><div class="recent-guide"><a href="${hp.guide}" target="_blank">highpoint.guide ↗</a></div></div>`;
-    row.addEventListener('click', () => window.location.href = 'peak.html?state=' + hp.state);
-    list.appendChild(row);
-  });
+$('form-submit').addEventListener('click', async () => {
+  const btn = $('form-submit');
+  const state = $('form-state').value, date = $('form-date').value;
+  if (!state || !date) { msg('Pick a state and a date.', true); return; }
+  const pass = $('form-pass').value.trim();
+  if (pass) Sync.setPasscode(pass);
+  const entry = { state, date, conditions: $('form-conditions').value.trim(), partners: $('form-partners').value.trim(), notes: $('form-notes').value.trim() };
+  btn.disabled = true; const label = btn.textContent; btn.textContent = 'Saving…';
+  try {
+    const saved = await Sync.saveSummit(entry, $('form-photo').files[0]);
+    remote.push({ state, date, conditions: entry.conditions, partners: entry.partners, notes: entry.notes, photo: saved.photo });
+    Sync.setCache(remote);
+    applySummits(); refreshAll();
+    ['form-conditions', 'form-partners', 'form-notes', 'form-photo'].forEach(id => { $(id).value = ''; });
+    msg('✓ Saved to your sheet.', false);
+  } catch (err) {
+    if (/passcode/i.test(err.message)) { Sync.setPasscode(''); $('form-pass').value = ''; }
+    msg('Couldn’t save: ' + err.message, true);
+  } finally { btn.disabled = false; btn.textContent = label; }
+});
+
+// ── DETAILS: bottom sheet (phone) / tooltip (desktop) ──
+const bs = $('bottom-sheet'), bsOverlay = $('bs-overlay'), tooltip = $('tooltip');
+let activeState = null, hoveredState = null;
+
+function setActive(state) {
+  if (activeState && dotEls[activeState]) dotEls[activeState].classList.remove('active');
+  activeState = state;
+  if (state && dotEls[state]) dotEls[state].classList.add('active');
 }
 
-// ── MOBILE DETECTION ──
-const isMobile = () => window.matchMedia('(max-width:767px)').matches;
-
-// ── BOTTOM SHEET ──
-const bs = document.getElementById('bottom-sheet');
-const bsOverlay = document.getElementById('bs-overlay');
-let activeDot = null;
+function fillDetails(hp, p) {
+  const log = sumMap[hp.state];
+  $(p + '-state').textContent = hp.name;
+  $(p + '-peak').textContent = hp.peak;
+  $(p + '-elev').textContent = hp.elev.toLocaleString() + ' ft';
+  $(p + '-gain').textContent = U.gainLabel(hp);
+  $(p + '-dist').textContent = hp.dist + ' mi RT';
+  $(p + '-effort').textContent = p === 'bs' ? hp.effort + '/1000' : hp.effort + ' / 1000';
+  const bar = $(p + '-diff-bar');
+  bar.style.width = (hp.diff / 10 * 100) + '%'; bar.style.background = U.diffColor(hp.diff);
+  $(p + '-diff-num').textContent = hp.diff + '/10';
+  const badge = $(p + '-badge'), row = $(p + '-date-row');
+  if (log) {
+    badge.textContent = '✓ Summited'; badge.className = (p === 'bs' ? 'bs-badge' : 'tt-badge') + ' done';
+    row.textContent = U.fmtDate(log.date) + (log.partners ? ' · ' + log.partners : '');
+    row.style.display = 'block';
+  } else {
+    badge.textContent = 'Not yet'; badge.className = (p === 'bs' ? 'bs-badge' : 'tt-badge') + ' todo';
+    row.style.display = 'none';
+  }
+}
 
 function openBS(hp) {
-  const log = sumMap[hp.state];
-  document.getElementById('bs-state').textContent = hp.name;
-  document.getElementById('bs-peak').textContent = hp.peak;
-  document.getElementById('bs-elev').textContent = hp.elev.toLocaleString() + ' ft';
-  document.getElementById('bs-gain').textContent = hp.gain > 0 ? hp.gain.toLocaleString() + ' ft' : 'Drive-up';
-  document.getElementById('bs-dist').textContent = hp.dist + ' mi RT';
-  document.getElementById('bs-effort').textContent = hp.effort + '/1000';
-  const bar = document.getElementById('bs-diff-bar');
-  bar.style.width = (hp.diff/10*100) + '%';
-  bar.style.background = diffColor(hp.diff);
-  document.getElementById('bs-diff-num').textContent = hp.diff + '/10';
-  document.getElementById('bs-profile-btn').href = 'peak.html?state=' + hp.state;
-  document.getElementById('bs-guide-btn').href = hp.guide;
-
-  const badge = document.getElementById('bs-badge');
-  const dateRow = document.getElementById('bs-date-row');
-  if (log) {
-    badge.textContent = '✓ Summited'; badge.className = 'bs-badge done';
-    const d = new Date(log.date + 'T12:00:00');
-    document.getElementById('bs-date').textContent =
-      d.toLocaleDateString('en-US',{month:'long', day:'numeric', year:'numeric'});
-    dateRow.style.display = 'flex';
-  } else {
-    badge.textContent = 'Not yet'; badge.className = 'bs-badge todo';
-    dateRow.style.display = 'none';
-  }
-
-  bs.classList.add('open');
-  bsOverlay.classList.add('visible');
+  fillDetails(hp, 'bs');
+  $('bs-profile-btn').href = 'peak.html?state=' + hp.state;
+  $('bs-guide-btn').href = hp.guide;
+  setActive(hp.state);
+  bs.classList.add('open'); bsOverlay.classList.add('visible');
 }
-
-function closeBS() {
-  bs.classList.remove('open');
-  bsOverlay.classList.remove('visible');
-  if (activeDot) { activeDot.classList.remove('active'); activeDot = null; }
-}
-
+function closeBS() { bs.classList.remove('open'); bsOverlay.classList.remove('visible'); setActive(null); }
 bsOverlay.addEventListener('click', closeBS);
-
-// Swipe down to close
-let bsTouchStart = 0;
-bs.addEventListener('touchstart', e => { bsTouchStart = e.touches[0].clientY; }, {passive:true});
-bs.addEventListener('touchend', e => {
-  if (e.changedTouches[0].clientY - bsTouchStart > 60) closeBS();
-}, {passive:true});
-
-const tooltip = document.getElementById('tooltip');
-let activeHp = null;
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeBS(); hideTT(); } });
+let bsY = 0;
+bs.addEventListener('touchstart', e => { bsY = e.touches[0].clientY; }, { passive: true });
+bs.addEventListener('touchend', e => { if (e.changedTouches[0].clientY - bsY > 60) closeBS(); }, { passive: true });
 
 function showTT(hp, x, y) {
-  activeHp = hp;
-  const log = sumMap[hp.state];
-  document.getElementById('tt-state').textContent = hp.name;
-  document.getElementById('tt-peak').textContent = hp.peak;
-  document.getElementById('tt-elev').textContent = hp.elev.toLocaleString() + ' ft';
-  document.getElementById('tt-gain').textContent = hp.gain > 0 ? hp.gain.toLocaleString() + ' ft' : 'Drive-up';
-  document.getElementById('tt-dist').textContent = hp.dist + ' mi RT';
-  document.getElementById('tt-effort').textContent = hp.effort + ' / 1000';
-  const bar = document.getElementById('tt-diff-bar');
-  bar.style.width = (hp.diff/10*100) + '%';
-  bar.style.background = diffColor(hp.diff);
-  document.getElementById('tt-diff-num').textContent = hp.diff + '/10';
-  document.getElementById('tt-guide-link').href = hp.guide;
-  document.getElementById('tt-profile-link').href = 'peak.html?state=' + hp.state;
-
-  const badge = document.getElementById('tt-badge');
-  const dateRow = document.getElementById('tt-date-row');
-  if (log) {
-    badge.textContent = '✓ Summited'; badge.className = 'tt-badge done';
-    const d = new Date(log.date + 'T12:00:00');
-    document.getElementById('tt-date').textContent =
-      d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) +
-      (log.partners ? ' · ' + log.partners : '');
-    dateRow.style.display = 'flex';
-  } else {
-    badge.textContent = 'Not yet'; badge.className = 'tt-badge todo';
-    dateRow.style.display = 'none';
-  }
-  posTT(x, y);
+  hoveredState = hp.state;
+  fillDetails(hp, 'tt');
+  const w = 290, h = 300, pad = 12;
+  let left = x + 16, top = y - 80;
+  if (left + w > innerWidth - pad) left = x - w - 16;
+  top = Math.max(pad, Math.min(top, innerHeight - h - pad));
+  tooltip.style.left = left + 'px'; tooltip.style.top = top + 'px';
   tooltip.classList.add('visible');
 }
+function hideTT() { hoveredState = null; tooltip.classList.remove('visible'); }
 
-function posTT(x, y) {
-  const w = 290, h = 280, pad = 12;
-  let left = x + 16, top = y - 80;
-  if (left + w > window.innerWidth - pad) left = x - w - 16;
-  if (top < pad) top = pad;
-  if (top + h > window.innerHeight - pad) top = window.innerHeight - h - pad;
-  tooltip.style.left = left + 'px';
-  tooltip.style.top  = top + 'px';
-}
-
-function hideTT() { tooltip.classList.remove('visible'); activeHp = null; }
-
-function diffColor(d) {
-  if (d <= 2) return '#a3c47a';
-  if (d <= 4) return '#d4b96a';
-  if (d <= 6) return '#e0895a';
-  if (d <= 8) return '#d05540';
-  return '#b83030';
-}
-
-// ── D3 MAP ──
-// FIPS numeric ID → state abbreviation (us-atlas uses FIPS codes as feature IDs)
-const FIPS = {
-  "01":"AL","02":"AK","04":"AZ","05":"AR","06":"CA","08":"CO","09":"CT",
-  "10":"DE","12":"FL","13":"GA","15":"HI","16":"ID","17":"IL","18":"IN",
-  "19":"IA","20":"KS","21":"KY","22":"LA","23":"ME","24":"MD","25":"MA",
-  "26":"MI","27":"MN","28":"MS","29":"MO","30":"MT","31":"NE","32":"NV",
-  "33":"NH","34":"NJ","35":"NM","36":"NY","37":"NC","38":"ND","39":"OH",
-  "40":"OK","41":"OR","42":"PA","44":"RI","45":"SC","46":"SD","47":"TN",
-  "48":"TX","49":"UT","50":"VT","51":"VA","53":"WA","54":"WV","55":"WI",
-  "56":"WY"
-};
+// ── MAP ──
+const FIPS = {"01":"AL","02":"AK","04":"AZ","05":"AR","06":"CA","08":"CO","09":"CT","10":"DE","12":"FL","13":"GA","15":"HI","16":"ID","17":"IL","18":"IN","19":"IA","20":"KS","21":"KY","22":"LA","23":"ME","24":"MD","25":"MA","26":"MI","27":"MN","28":"MS","29":"MO","30":"MT","31":"NE","32":"NV","33":"NH","34":"NJ","35":"NM","36":"NY","37":"NC","38":"ND","39":"OH","40":"OK","41":"OR","42":"PA","44":"RI","45":"SC","46":"SD","47":"TN","48":"TX","49":"UT","50":"VT","51":"VA","53":"WA","54":"WV","55":"WI","56":"WY"};
+const W = 960, H = 600;
+const dotEls = {}, pos = {};
+let mapReady = false, zoomBehavior, svgSel, zoomG, curK = 1;
 
 async function buildMap() {
-  const us = await d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
-
-  const width = 960, height = 600;
-  const projection = d3.geoAlbersUsa().scale(1300).translate([width/2, height/2]);
+  const us = await d3.json('vendor/states-10m.json');
+  const projection = d3.geoAlbersUsa().scale(1300).translate([W / 2, H / 2]);
   const path = d3.geoPath().projection(projection);
+  svgSel = d3.select('#us-map');
+  zoomG = svgSel.append('g').attr('id', 'zoom-g');
 
-  const svg = d3.select('#us-map').attr('viewBox', `0 0 ${width} ${height}`);
+  zoomG.append('g').selectAll('path').data(topojson.feature(us, us.objects.states).features).join('path')
+    .attr('class', d => 'state-fill state-todo').attr('data-st', d => FIPS[String(d.id).padStart(2, '0')]).attr('d', path);
+  zoomG.append('path').datum(topojson.mesh(us, us.objects.states, (a, b) => a !== b)).attr('class', 'state-border').attr('d', path);
+  zoomG.append('path').datum(topojson.mesh(us, us.objects.states, (a, b) => a === b)).attr('class', 'nation-border').attr('d', path);
 
-  // State fills — color by summited status
-  svg.append('g')
-    .attr('id', 'states-g')
-    .selectAll('path')
-    .data(topojson.feature(us, us.objects.states).features)
-    .join('path')
-    .attr('class', d => {
-      const abbr = FIPS[String(d.id).padStart(2,'0')];
-      return 'state-fill ' + (sumMap[abbr] ? 'state-done' : 'state-todo');
-    })
-    .attr('data-fips', d => String(d.id).padStart(2,'0'))
-    .attr('d', path);
-
-  // State borders (interior)
-  svg.append('path')
-    .datum(topojson.mesh(us, us.objects.states, (a,b) => a !== b))
-    .attr('class', 'state-border')
-    .attr('d', path);
-
-  // Nation outline
-  svg.append('path')
-    .datum(topojson.mesh(us, us.objects.states, (a,b) => a === b))
-    .attr('class', 'nation-border')
-    .attr('d', path);
-
-  // Dots
-  const dotsG = svg.append('g').attr('id', 'dots-g');
-
+  const dotsG = zoomG.append('g').attr('id', 'dots-g');
   HIGHPOINTS.forEach(hp => {
-    const proj = projection([hp.lng, hp.lat]);
-    if (!proj) return;
-    const [x, y] = proj;
+    const p = projection([hp.lng, hp.lat]); if (!p) return;
+    pos[hp.state] = p;
+    const g = dotsG.append('g').attr('data-state', hp.state).attr('tabindex', 0).attr('role', 'button');
+    g.append('circle').attr('class', 'hit').attr('cx', p[0]).attr('cy', p[1]);
+    g.append('circle').attr('class', 'ring').attr('cx', p[0]).attr('cy', p[1]);
+    g.append('circle').attr('class', 'core').attr('cx', p[0]).attr('cy', p[1]);
+    dotEls[hp.state] = g.node();
+    g.on('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(hp); } });
+    g.on('focus', () => { if (!isMobile()) { const r = g.node().getBoundingClientRect(); showTT(hp, r.right, r.top); } });
+    g.on('blur', () => { if (!isMobile()) hideTT(); });
+  });
+
+  zoomBehavior = d3.zoom().scaleExtent([1, 8]).filter(() => false)   // programmatic only: page scroll stays natural
+    .on('zoom', e => { zoomG.attr('transform', e.transform); curK = e.transform.k; sizeDots(); });
+  svgSel.call(zoomBehavior);
+  mapReady = true;
+  sizeDots(); updateMap();
+}
+
+// Keep dots a steady on-screen size while zoomed
+function sizeDots() {
+  const k = Math.pow(curK, 0.8);
+  HIGHPOINTS.forEach(hp => {
+    const g = dotEls[hp.state]; if (!g) return;
     const done = !!sumMap[hp.state];
-
-    const g = dotsG.append('g')
-      .attr('class', 'hp-dot ' + (done ? 'done' : 'todo'))
-      .attr('data-state', hp.state)
-      .style('cursor','pointer');
-
-    g.append('circle').attr('class','ring').attr('cx',x).attr('cy',y).attr('r', done ? 10 : 8);
-    g.append('circle').attr('class','core').attr('cx',x).attr('cy',y).attr('r', done ? 6 : 4);
-
-    g.on('mouseenter', (e) => { if (!isMobile()) showTT(hp, e.clientX, e.clientY); })
-     .on('mousemove',  (e) => { if (!isMobile()) posTT(e.clientX, e.clientY); })
-     .on('mouseleave', () =>  { if (!isMobile()) hideTT(); })
-     .on('touchstart', (e) => {
-       e.preventDefault();
-       if (activeDot) activeDot.classList.remove('active');
-       activeDot = this || g.node();
-       g.node().classList.add('active');
-       openBS(hp);
-     })
-     .on('click', (e) => {
-       if (!isMobile()) window.location.href = 'peak.html?state=' + hp.state;
-     });
+    const core = (done ? 6.5 : 5.5) / k;
+    g.querySelector('.core').setAttribute('r', core);
+    g.querySelector('.ring').setAttribute('r', core + 4 / k);
+    g.querySelector('.hit').setAttribute('r', 16 / k);
   });
 }
 
-function updateDots() {
-  d3.selectAll('.hp-dot').each(function() {
-    const state = this.getAttribute('data-state');
-    const done = !!sumMap[state];
-    d3.select(this).attr('class', 'hp-dot ' + (done ? 'done' : 'todo'));
+function updateMap() {
+  if (!mapReady) return;
+  d3.selectAll('.state-fill').each(function () {
+    const st = this.getAttribute('data-st'), done = !!sumMap[st];
+    this.classList.toggle('state-done', done); this.classList.toggle('state-todo', !done);
+    this.classList.toggle('state-out', view.region !== 'All' && !(REGIONS[view.region].includes(st)));
   });
-  // Also repaint state fills
-  d3.selectAll('.state-fill').each(function() {
-    const abbr = FIPS[this.getAttribute('data-fips')];
-    this.classList.toggle('state-done', !!sumMap[abbr]);
-    this.classList.toggle('state-todo', !sumMap[abbr]);
+  HIGHPOINTS.forEach(hp => {
+    const g = dotEls[hp.state]; if (!g) return;
+    const done = !!sumMap[hp.state];
+    g.setAttribute('class', 'hp-dot ' + (done ? 'done' : 'todo') + (inRegion(hp) ? '' : ' out') + (hp.state === activeState ? ' active' : ''));
+    g.setAttribute('aria-label', hp.peak + ', ' + hp.name + (done ? ', summited ' + U.fmtMonth(sumMap[hp.state].date) : ', not yet summited'));
   });
+  sizeDots();
 }
 
-buildStats();
-buildFormSelect();
-buildRecent();
-buildMap();
+function zoomToRegion(region) {
+  if (!mapReady) return;
+  let t = d3.zoomIdentity;
+  if (region !== 'All') {
+    const pts = REGIONS[region].filter(s => s !== 'AK' && s !== 'HI').map(s => pos[s]).filter(Boolean);
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), pad = 55;
+    const x0 = Math.min(...xs) - pad, x1 = Math.max(...xs) + pad, y0 = Math.min(...ys) - pad, y1 = Math.max(...ys) + pad;
+    const k = Math.max(1, Math.min(6, W / (x1 - x0), H / (y1 - y0)));
+    t = d3.zoomIdentity.translate(W / 2 - k * (x0 + x1) / 2, H / 2 - k * (y0 + y1) / 2).scale(k);
+  }
+  svgSel.transition().duration(reduceMotion() ? 0 : 650).call(zoomBehavior.transform, t);
+}
 
-// Pull the latest from the sheet, then repaint (map dots/fills included)
+// Nearest-dot hit testing (screen pixels): reliable for fingers and for crowded states
+function nearestDot(x, y, maxPx) {
+  let best = null, bd = maxPx;
+  HIGHPOINTS.forEach(hp => {
+    const g = dotEls[hp.state]; if (!g || g.classList.contains('out')) return;
+    const r = g.querySelector('.core').getBoundingClientRect();
+    const d = Math.hypot(r.left + r.width / 2 - x, r.top + r.height / 2 - y);
+    if (d < bd) { bd = d; best = hp; }
+  });
+  return best;
+}
+function activate(hp) { if (isMobile()) openBS(hp); else location.href = 'peak.html?state=' + hp.state; }
+
+const svgEl = $('us-map');
+svgEl.addEventListener('click', e => {
+  const hp = nearestDot(e.clientX, e.clientY, isMobile() ? 28 : 16);
+  if (hp) activate(hp); else if (isMobile()) closeBS();
+});
+let hoverRaf = 0;
+svgEl.addEventListener('mousemove', e => {
+  if (isMobile()) return;
+  cancelAnimationFrame(hoverRaf);
+  hoverRaf = requestAnimationFrame(() => {
+    const hp = nearestDot(e.clientX, e.clientY, 16);
+    svgEl.style.cursor = hp ? 'pointer' : 'default';
+    if (hp) showTT(hp, e.clientX, e.clientY); else hideTT();
+  });
+});
+svgEl.addEventListener('mouseleave', hideTT);
+
+// ── CONTROLS ──
+$('region-chips').addEventListener('click', e => {
+  const b = e.target.closest('[data-region]'); if (!b) return;
+  view.region = b.dataset.region; closeBS(); buildChips(); buildList(); updateMap(); zoomToRegion(view.region);
+});
+$('status-chips').addEventListener('click', e => {
+  const b = e.target.closest('[data-status]'); if (!b) return;
+  view.status = b.dataset.status; buildChips(); buildList();
+});
+$('sort').addEventListener('change', e => { view.sort = e.target.value; buildList(); });
+
+// ── RENDER ──
+function refreshAll() {
+  buildStats(); buildNumbers(); buildTrips(); buildNext(); buildChips(); buildList(); buildWall(); buildRecent(); buildFormSelect(); updateMap();
+}
+refreshAll();
+buildMap().catch(err => { console.error(err); $('map-hint').textContent = 'The map couldn’t load — the peak list below still works.'; });
+
+if (isMobile() === false) $('map-hint').textContent = 'Hover a dot for details — click for the full profile';
+
+// ── SHEET SYNC ──
+function setSyncStatus(t) { $('sync-status').textContent = t; }
 if (Sync.enabled()) {
+  setSyncStatus('Syncing…');
   Sync.fetchRemote()
-    .then(remote => { applySummits(Sync.merge(SUMMITED, remote)); refreshAll(); })
-    .catch(err => console.warn('Sheet sync failed; showing saved data.', err));
+    .then(rows => { remote = rows; applySummits(); refreshAll(); setSyncStatus('Synced with your sheet'); })
+    .catch(err => { console.warn('Sheet sync failed; showing saved data.', err); setSyncStatus('Offline — showing saved data'); });
+} else { setSyncStatus('Read-only (sheet not connected)'); }
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
 }
 </script>
 </body>
