@@ -50,7 +50,7 @@ const HIGHPOINTS = [
   {state:"ND",name:"North Dakota",  peak:"White Butte",            elev:3506, gain:400,  dist:3.4, diff:2, effort:29,  lat:46.387,lng:-103.302,guide:"https://highpoint.guide/nd/"},
   {state:"HI",name:"Hawaii",        peak:"Mauna Kea",              elev:13796,gain:230,  dist:0.4, diff:2, effort:7,   lat:19.821,lng:-155.468,guide:"https://highpoint.guide/hi/"},
   {state:"MD",name:"Maryland",      peak:"Hoye Crest",             elev:3360, gain:750,  dist:2.2, diff:3, effort:27,  lat:39.236,lng:-79.487, guide:"https://highpoint.guide/md/"},
-  {state:"TN",name:"Tennessee",     peak:"Kuwohi",                 elev:6643, gain:330,  dist:1,   diff:2, effort:12,  lat:35.563,lng:-83.498, guide:"https://highpoint.guide/tn/"},
+  {state:"TN",name:"Tennessee",     peak:"Clingmans Dome",                elev:6643, gain:330,  dist:1,   diff:2, effort:12,  lat:35.563,lng:-83.498, guide:"https://highpoint.guide/tn/"},
   {state:"GA",name:"Georgia",       peak:"Brasstown Bald",         elev:4784, gain:400,  dist:1,   diff:2, effort:1,   lat:34.874,lng:-83.811, guide:"https://highpoint.guide/ga/"},
   {state:"IL",name:"Illinois",      peak:"Charles Mound",          elev:1235, gain:275,  dist:2.5, diff:2, effort:21,  lat:42.508,lng:-90.240, guide:"https://highpoint.guide/il/"},
   {state:"NC",name:"North Carolina",peak:"Mount Mitchell",         elev:6684, gain:100,  dist:0.2, diff:1, effort:3,   lat:35.765,lng:-82.265, guide:"https://highpoint.guide/nc/"},
